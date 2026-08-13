@@ -52,5 +52,39 @@
     SUPABASE_KEY
   );
 </script>
+  <script>
+  async function loadProviders() {
+    const { data, error } = await supabaseClient
+      .from("profiles")
+      .select("*")
+      .eq("role", "provider");
+
+    if (error) {
+      console.log(error);
+      return;
+    }
+
+    const providersList = document.getElementById("providersList");
+
+    providersList.innerHTML = "";
+
+    data.forEach(function(provider) {
+      providersList.innerHTML += `
+        <div class="provider-card">
+          <h3>🎨 ${provider.full_name}</h3>
+          <p>🛠️ ${provider.service}</p>
+          <p>📍 ${provider.location}</p>
+          <p>⭐ ${provider.rating}</p>
+          <p>📞 ${provider.phone}</p>
+          <button onclick="window.location.href='contact.html'">
+            Contact Provider
+          </button>
+        </div>
+      `;
+    });
+  }
+
+  loadProviders();
+  </script>
 </body>
 </html>
