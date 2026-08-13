@@ -41,5 +41,16 @@
   document.getElementById("selectedService").textContent =
     service ? "Providers for: " + service : "All Service Providers";
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+  const SUPABASE_URL = "https://ffjofoeiwaiyxecbeuwt.supabase.co/rest/v1/";
+  const SUPABASE_KEY = "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+  const supabaseClient = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+</script>
 </body>
 </html>
