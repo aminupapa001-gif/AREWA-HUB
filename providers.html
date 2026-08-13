@@ -56,8 +56,9 @@
   async function loadProviders() {
     const { data, error } = await supabaseClient
       .from("profiles")
-      .select("*")
-      .eq("role", "provider");
+.select("*")
+.eq("role", "provider")
+.eq("service", service);
 
     if (error) {
       console.log(error);
