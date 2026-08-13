@@ -4,6 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AREWA HUB - Providers</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    .provider-card {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 16px;
+      margin: 15px 0;
+    }
+
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 
 <body>
@@ -15,64 +36,67 @@
   <p id="selectedService"></p>
 
   <div id="providersList"></div>
-  <button onclick="window.location.href='contact.html'">
-  Contact Provider
-  </button>
 
-  <script>
-  const params = new URLSearchParams(window.location.search);
-  const service = params.get("service");
-
-  document.getElementById("selectedService").textContent =
-    service ? "Providers for: " + service : "All Service Providers";
-  </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  const SUPABASE_URL = "https://ffjofoeiwaiyxecbeuwt.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+  <script>
+    const SUPABASE_URL = "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
 
-  const supabaseClient = supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-  );
-</script>
-  const params = new URLSearchParams(window.location.search);
-  const service = params.get("service");
+    const supabaseClient = supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
 
-  async function loadProviders() {
-    const { data, error } = await supabaseClient
-      .from("profiles")
-      .select("*")
-      .eq("role", "provider")
-      .eq("service", service);
+    const params = new URLSearchParams(window.location.search);
+    const service = params.get("service");
 
-    const providersList = document.getElementById("providersList");
+    document.getElementById("selectedService").textContent =
+      service ? "Providers for: " + service : "All Service Providers";
 
-    if (error) {
-      providersList.innerHTML = "<p>Unable to load providers.</p>";
-      console.log(error);
-      return;
+    async function loadProviders() {
+      const providersList = document.getElementById("providersList");
+
+      const { data, error } = await supabaseClient
+        .from("profiles")
+        .select("*")
+        .eq("role", "provider")
+        .eq("service", service);
+
+      if (error) {
+        providersList.innerHTML =
+          "<p>Unable to load providers.</p>";
+        console.log(error);
+        return;
+      }
+
+      providersList.innerHTML = "";
+
+      if (!data || data.length === 0) {
+        providersList.innerHTML =
+          "<p>No providers found for this service.</p>";
+        return;
+      }
+
+      data.forEach(function(provider) {
+        providersList.innerHTML += `
+          <div class="provider-card">
+            <h3>🎨 ${provider.full_name}</h3>
+            <p>🛠️ ${provider.service}</p>
+            <p>📍 ${provider.location}</p>
+            <p>⭐ ${provider.rating}</p>
+            <p>📞 ${provider.phone}</p>
+
+            <button onclick="window.location.href='contact.html'">
+              Contact Provider
+            </button>
+          </div>
+        `;
+      });
     }
 
-    providersList.innerHTML = "";
+    loadProviders();
+  </script>
 
-    data.forEach(function(provider) {
-      providersList.innerHTML += `
-        <div class="provider-card">
-          <h3>🎨 ${provider.full_name}</h3>
-          <p>🛠️ ${provider.service}</p>
-          <p>📍 ${provider.location}</p>
-          <p>⭐ ${provider.rating}</p>
-          <p>📞 ${provider.phone}</p>
-          <button onclick="window.location.href='contact.html'">
-            Contact Provider
-          </button>
-        </div>
-      `;
-    });
-  }
-
-  loadProviders();
-</script>
 </body>
 </html>
