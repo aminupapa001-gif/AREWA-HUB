@@ -39,19 +39,23 @@
   );
 </script>
   <script>
+  const params = new URLSearchParams(window.location.search);
+  const service = params.get("service");
+
   async function loadProviders() {
     const { data, error } = await supabaseClient
       .from("profiles")
-.select("*")
-.eq("role", "provider")
-.eq("service", service);
+      .select("*")
+      .eq("role", "provider")
+      .eq("service", service);
+
+    const providersList = document.getElementById("providersList");
 
     if (error) {
+      providersList.innerHTML = "<p>Unable to load providers.</p>";
       console.log(error);
       return;
     }
-
-    const providersList = document.getElementById("providersList");
 
     providersList.innerHTML = "";
 
@@ -72,6 +76,6 @@
   }
 
   loadProviders();
-  </script>
+</script>
 </body>
 </html>
