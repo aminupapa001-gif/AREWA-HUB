@@ -12,14 +12,56 @@
 
   <h2>Contact Provider</h2>
 
-  <p>Choose how you want to contact this provider:</p>
+  <div id="providerInfo">
+    Loading provider...
+  </div>
 
-  <a href="tel:08000000000">
-  <button>📞 Call Provider</button>
-  </a>
-  <a href="https://wa.me/2348000000000">
-  <button>💬 WhatsApp Provider</button>
-  </a>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    const SUPABASE_URL = "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+    const supabaseClient = supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    const params = new URLSearchParams(window.location.search);
+    const providerId = params.get("id");
+
+    async function loadProvider() {
+      const providerInfo = document.getElementById("providerInfo");
+
+      const { data, error } = await supabaseClient
+        .from("profiles")
+        .select("*")
+        .eq("id", providerId)
+        .single();
+
+      if (error || !data) {
+        providerInfo.innerHTML = "<p>Provider not found.</p>";
+        return;
+      }
+
+      providerInfo.innerHTML = `
+        <h3>🎨 ${data.full_name}</h3>
+        <p>🛠️ ${data.service}</p>
+        <p>📍 ${data.location}</p>
+        <p>⭐ ${data.rating}</p>
+
+        <a href="tel:${data.phone}">
+          <button>📞 Call Provider</button>
+        </a>
+
+        <a href="https://wa.me/234${data.whatsapp.substring(1)}">
+          <button>💬 WhatsApp Provider</button>
+        </a>
+      `;
+    }
+
+    loadProvider();
+  </script>
 
 </body>
 </html>
