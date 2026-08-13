@@ -31,30 +31,64 @@
     const providerId = params.get("id");
 
     async function loadProvider() {
-      const providerInfo = document.getElementById("providerInfo");
+
+      const providerInfo =
+        document.getElementById("providerInfo");
+
+      if (!providerId) {
+        providerInfo.innerHTML =
+          "<p>Provider ID not found.</p>";
+        return;
+      }
 
       const { data, error } = await supabaseClient
-        .from("profiles")
+        .from("provider_profiles")
         .select("*")
         .eq("id", providerId)
         .single();
 
       if (error || !data) {
-        providerInfo.innerHTML = "<p>Provider not found.</p>";
+
+        console.log(error);
+
+        providerInfo.innerHTML =
+          "<p>Provider not found.</p>";
+
         return;
       }
 
+      const whatsappNumber =
+        data.whatsapp
+          ? data.whatsapp.replace(/\D/g, "")
+          : "";
+
+      const whatsappInternational =
+        whatsappNumber.startsWith("234")
+          ? whatsappNumber
+          : "234" + whatsappNumber.replace(/^0/, "");
+
       providerInfo.innerHTML = `
         <h3>🎨 ${data.full_name}</h3>
+
         <p>🛠️ ${data.service}</p>
+
         <p>📍 ${data.location}</p>
-        <p>⭐ ${data.rating}</p>
+
+        <p>⭐ ${data.rating || "New Provider"}</p>
+
         <p>📝 ${data.bio || "No bio available."}</p>
+
+        <p>📞 ${data.phone}</p>
+
+        <br>
+
         <a href="tel:${data.phone}">
           <button>📞 Call Provider</button>
         </a>
 
-        <a href="https://wa.me/234${data.whatsapp.substring(1)}">
+        <br><br>
+
+        <a href="https://wa.me/${whatsappInternational}">
           <button>💬 WhatsApp Provider</button>
         </a>
       `;
