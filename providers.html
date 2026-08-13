@@ -16,6 +16,8 @@
       border-radius: 12px;
       padding: 16px;
       margin: 15px 0;
+      background: #fff;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
     }
 
     button {
@@ -23,6 +25,9 @@
       border: none;
       border-radius: 8px;
       cursor: pointer;
+      background: #0b7a3b;
+      color: white;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -35,7 +40,9 @@
 
   <p id="selectedService"></p>
 
-  <div id="providersList"></div>
+  <div id="providersList">
+    Loading providers...
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -52,46 +59,68 @@
     const service = params.get("service");
 
     document.getElementById("selectedService").textContent =
-      service ? "Providers for: " + service : "All Service Providers";
+      service
+        ? "Providers for: " + service
+        : "All Service Providers";
 
     async function loadProviders() {
-      const providersList = document.getElementById("providersList");
 
-      const { data, error } = await supabaseClient
-        .from("profiles")
-        .select("*")
-        .eq("role", "provider")
-        .eq("service", service);
+      const providersList =
+        document.getElementById("providersList");
+
+      let query = supabaseClient
+        .from("provider_profiles")
+        .select("*");
+
+      if (service) {
+        query = query.ilike("service", "%" + service + "%");
+      }
+
+      const { data, error } = await query;
 
       if (error) {
+        console.log(error);
+
         providersList.innerHTML =
           "<p>Unable to load providers.</p>";
-        console.log(error);
+
         return;
       }
 
       providersList.innerHTML = "";
 
       if (!data || data.length === 0) {
+
         providersList.innerHTML =
           "<p>No providers found for this service.</p>";
+
         return;
       }
 
       data.forEach(function(provider) {
+
         providersList.innerHTML += `
           <div class="provider-card">
+
             <h3>🎨 ${provider.full_name}</h3>
+
             <p>🛠️ ${provider.service}</p>
+
             <p>📍 ${provider.location}</p>
-            <p>⭐ ${provider.rating}</p>
+
+            <p>⭐ ${provider.rating || "New Provider"}</p>
+
+            <p>📝 ${provider.bio || "No bio available."}</p>
+
             <p>📞 ${provider.phone}</p>
 
             <button onclick="window.location.href='contact.html?id=${provider.id}'">
-  Contact Provider
-</button>
+              Contact Provider
+            </button>
+
           </div>
         `;
+
       });
     }
 
