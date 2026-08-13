@@ -14,6 +14,12 @@
 
   <form id="providerForm">
 
+    <label>Email</label><br>
+    <input type="email" id="email" required><br><br>
+
+    <label>Password</label><br>
+    <input type="password" id="password" minlength="6" required><br><br>
+
     <label>Full Name</label><br>
     <input type="text" id="full_name" required><br><br>
 
@@ -54,18 +60,35 @@
       event.preventDefault();
 
       const message = document.getElementById("message");
+      message.textContent = "Creating your provider account...";
 
-      const full_name = document.getElementById("full_name").value;
-      const phone = document.getElementById("phone").value;
-      const whatsapp = document.getElementById("whatsapp").value;
-      const service = document.getElementById("service").value;
-      const location = document.getElementById("location").value;
-      const bio = document.getElementById("bio").value;
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
 
-      const { data, error } = await supabaseClient
+      const full_name = document.getElementById("full_name").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const whatsapp = document.getElementById("whatsapp").value.trim();
+      const service = document.getElementById("service").value.trim();
+      const location = document.getElementById("location").value.trim();
+      const bio = document.getElementById("bio").value.trim();
+
+      const { data: authData, error: authError } =
+        await supabaseClient.auth.signUp({
+          email: email,
+          password: password
+        });
+
+      if (authError) {
+        console.log(authError);
+        message.textContent = "Account creation failed: " + authError.message;
+        return;
+      }
+
+      const { error: profileError } = await supabaseClient
         .from("provider_profiles")
         .insert([
           {
+            user_id: authData.user.id,
             full_name: full_name,
             phone: phone,
             whatsapp: whatsapp,
@@ -75,13 +98,14 @@
           }
         ]);
 
-      if (error) {
-        console.log(error);
-        message.textContent = "Registration failed.";
+      if (profileError) {
+        console.log(profileError);
+        message.textContent = "Account created, but provider profile failed: " + profileError.message;
         return;
       }
 
-      message.textContent = "Provider registration successful!";
+      message.textContent =
+        "Provider registration successful! Check your email to confirm your account.";
 
       document.getElementById("providerForm").reset();
     });
