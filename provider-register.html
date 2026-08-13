@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AREWA HUB - Provider Registration</title>
+</head>
+
+<body>
+
+  <h1>AREWA HUB</h1>
+
+  <h2>Become a Service Provider</h2>
+
+  <form id="providerForm">
+
+    <label>Full Name</label><br>
+    <input type="text" id="full_name" required><br><br>
+
+    <label>Phone</label><br>
+    <input type="tel" id="phone" required><br><br>
+
+    <label>WhatsApp Number</label><br>
+    <input type="tel" id="whatsapp" required><br><br>
+
+    <label>Service</label><br>
+    <input type="text" id="service" placeholder="e.g. Graphic Design" required><br><br>
+
+    <label>Location</label><br>
+    <input type="text" id="location" placeholder="e.g. Kano" required><br><br>
+
+    <label>About You</label><br>
+    <textarea id="bio" rows="5"></textarea><br><br>
+
+    <button type="submit">Register as Provider</button>
+
+  </form>
+
+  <p id="message"></p>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    const SUPABASE_URL = "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+    const supabaseClient = supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    document.getElementById("providerForm").addEventListener("submit", async function(event) {
+
+      event.preventDefault();
+
+      const message = document.getElementById("message");
+
+      const full_name = document.getElementById("full_name").value;
+      const phone = document.getElementById("phone").value;
+      const whatsapp = document.getElementById("whatsapp").value;
+      const service = document.getElementById("service").value;
+      const location = document.getElementById("location").value;
+      const bio = document.getElementById("bio").value;
+
+      const { data, error } = await supabaseClient
+        .from("provider_profiles")
+        .insert([
+          {
+            full_name: full_name,
+            phone: phone,
+            whatsapp: whatsapp,
+            service: service,
+            location: location,
+            bio: bio
+          }
+        ]);
+
+      if (error) {
+        console.log(error);
+        message.textContent = "Registration failed.";
+        return;
+      }
+
+      message.textContent = "Provider registration successful!";
+
+      document.getElementById("providerForm").reset();
+    });
+  </script>
+
+</body>
+</html>
