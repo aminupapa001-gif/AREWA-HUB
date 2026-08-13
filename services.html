@@ -18,7 +18,15 @@
   <button>Offer a Service</button>
 
   <h3>Popular Services</h3>
+<h2>🛠️ Find a Service</h2>
 
+<input type="text" id="serviceSearch" placeholder="Search for a service...">
+
+<h2>🛠️ Find a Service</h2>
+
+<input type="text" id="serviceSearch" placeholder="Search for a service...">
+
+<hr>
   <p>🎨 Graphic Design</p>
   <p>💻 Web Development</p>
   <p>📱 Phone Repair</p>
@@ -34,5 +42,21 @@
 <p>🧱 Bricklayer</p>
 <p>⚙️ Engineering</p>
 <p>🤝 Partner</p>
+<script>
+  const searchInput = document.getElementById("serviceSearch");
+  const services = document.querySelectorAll("body p");
+
+  searchInput.addEventListener("input", function () {
+    const searchText = this.value.toLowerCase();
+
+    services.forEach(function (service) {
+      if (service.textContent.toLowerCase().includes(searchText)) {
+        service.style.display = "block";
+      } else {
+        service.style.display = "none";
+      }
+    });
+  });
+    </script>
 </body>
 </html>
