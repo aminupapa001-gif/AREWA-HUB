@@ -30,5 +30,12 @@
   <p>📞 08000000001</p>
   <button>Contact Provider</button>
 </div>
+  <script>
+  const params = new URLSearchParams(window.location.search);
+  const service = params.get("service");
+
+  document.getElementById("selectedService").textContent =
+    service ? "Providers for: " + service : "All Service Providers";
+  </script>
 </body>
 </html>
