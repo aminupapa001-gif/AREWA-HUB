@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AREWA HUB - Buyer Login</title>
+</head>
+
+<body>
+
+  <h1>AREWA HUB</h1>
+
+  <h2>Buyer Login</h2>
+
+  <form id="loginForm">
+
+    <label>Email</label><br>
+    <input type="email" id="email" required><br><br>
+
+    <label>Password</label><br>
+    <input type="password" id="password" required><br><br>
+
+    <button type="submit">Login</button>
+
+  </form>
+
+  <p id="message"></p>
+
+  <p>
+    Don't have an account?
+    <a href="buyer-register.html">Create Buyer Account</a>
+  </p>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    const SUPABASE_URL = "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+    const supabaseClient = supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    document.getElementById("loginForm").addEventListener(
+      "submit",
+      async function(event) {
+
+        event.preventDefault();
+
+        const message =
+          document.getElementById("message");
+
+        message.textContent = "Logging in...";
+
+        const email =
+          document.getElementById("email").value.trim();
+
+        const password =
+          document.getElementById("password").value;
+
+        const { data, error } =
+          await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password
+          });
+
+        if (error) {
+
+          console.log(error);
+
+          message.textContent =
+            "Login failed: " + error.message;
+
+          return;
+        }
+
+        message.textContent =
+          "Login successful!";
+
+        setTimeout(function() {
+          window.location.href = "buyer.html";
+        }, 1000);
+      }
+    );
+  </script>
+
+</body>
+</html>
