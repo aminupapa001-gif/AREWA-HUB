@@ -1,41 +1,132 @@
-buyer.html
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AREWA HUB - Buyer</title>
+  <title>AREWA HUB - Buyer Dashboard</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 12px 18px;
+      margin: 6px 0;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 
 <body>
 
   <h1>🛍️ AREWA HUB</h1>
 
-  <h2>Buyer Marketplace</h2>
+  <h2>Buyer Dashboard</h2>
 
-  <p>Find products from trusted sellers.</p>
+  <div class="card">
+    <h3>👤 Welcome</h3>
 
-  <h3>👤 Buyer Account</h3>
+    <p id="buyerName">Loading...</p>
+    <p id="buyerPhone"></p>
+    <p id="buyerLocation"></p>
 
-  <p>Create an account to buy products on AREWA HUB.</p>
+    <button onclick="window.location.href='buyer.html'">
+      🛍️ Browse Products
+    </button>
 
-  <button onclick="window.location.href='buyer-register.html'">
-    📝 Create Buyer Account
-  </button>
+    <br>
 
-  <br><br>
+    <button onclick="window.location.href='cart.html'">
+      🛒 My Cart
+    </button>
 
-  <button onclick="window.location.href='buyer_login.html'">
-    🔐 Buyer Login
-  </button>
+    <br>
 
-  <h3>Popular Categories</h3>
+    <button onclick="logout()">
+      🚪 Logout
+    </button>
 
-  <p>📱 Phones</p>
-  <p>👕 Fashion</p>
-  <p>🏠 Home & Living</p>
-  <p>💻 Electronics</p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    const SUPABASE_URL =
+      "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+    const supabaseClient =
+      supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+    async function loadBuyer() {
+
+      const {
+        data: { user },
+        error: authError
+      } = await supabaseClient.auth.getUser();
+
+      if (authError || !user) {
+        window.location.href = "buyer_login.html";
+        return;
+      }
+
+      const {
+        data: profile,
+        error: profileError
+      } = await supabaseClient
+        .from("profiles")
+        .select("full_name, phone, location, role")
+        .eq("user_id", user.id)
+        .single();
+
+      if (profileError || !profile) {
+        document.getElementById("buyerName").textContent =
+          "Buyer profile not found.";
+        return;
+      }
+
+      if (profile.role !== "buyer") {
+        document.getElementById("buyerName").textContent =
+          "This is not a buyer account.";
+        return;
+      }
+
+      document.getElementById("buyerName").textContent =
+        "Welcome, " + profile.full_name + " 👋";
+
+      document.getElementById("buyerPhone").textContent =
+        "📞 " + profile.phone;
+
+      document.getElementById("buyerLocation").textContent =
+        "📍 " + profile.location;
+    }
+
+    async function logout() {
+
+      await supabaseClient.auth.signOut();
+
+      window.location.href = "buyer_login.html";
+    }
+
+    loadBuyer();
+  </script>
 
 </body>
 </html>
