@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AREWA HUB - Seller Login</title>
+</head>
+
+<body>
+
+  <h1>🏪 AREWA HUB</h1>
+
+  <h2>Seller Login</h2>
+
+  <form id="loginForm">
+
+    <label>Email</label><br>
+    <input type="email" id="email" required><br><br>
+
+    <label>Password</label><br>
+    <input type="password" id="password" required><br><br>
+
+    <button type="submit">🔐 Login</button>
+
+  </form>
+
+  <p id="message"></p>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+
+    const SUPABASE_URL =
+      "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+    const supabaseClient =
+      supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+    document.getElementById("loginForm").addEventListener(
+      "submit",
+      async function(event) {
+
+        event.preventDefault();
+
+        const message =
+          document.getElementById("message");
+
+        message.textContent = "Logging in...";
+
+        const email =
+          document.getElementById("email").value.trim();
+
+        const password =
+          document.getElementById("password").value;
+
+        const { data, error } =
+          await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password
+          });
+
+        if (error) {
+
+          message.textContent =
+            "Login failed: " + error.message;
+
+          return;
+        }
+
+        const user = data.user;
+
+        const {
+          data: profile,
+          error: profileError
+        } = await supabaseClient
+          .from("profiles")
+          .select("role")
+          .eq("user_id", user.id)
+          .single();
+
+        if (profileError || !profile) {
+
+          await supabaseClient.auth.signOut();
+
+          message.textContent =
+            "Seller profile not found.";
+
+          return;
+        }
+
+        if (profile.role !== "seller") {
+
+          await supabaseClient.auth.signOut();
+
+          message.textContent =
+            "This account is not a seller account.";
+
+          return;
+        }
+
+        message.textContent =
+          "Seller login successful!";
+
+        setTimeout(function() {
+          window.location.href = "seller.html";
+        }, 1000);
+
+      }
+    );
+
+  </script>
+
+</body>
+</html>
