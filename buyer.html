@@ -20,11 +20,13 @@
     }
 
     button {
-      padding: 12px 18px;
-      margin: 6px 0;
+      width: 100%;
+      padding: 14px;
+      margin: 8px 0;
       border: none;
       border-radius: 8px;
       cursor: pointer;
+      font-size: 16px;
     }
   </style>
 </head>
@@ -36,27 +38,32 @@
   <h2>Buyer Dashboard</h2>
 
   <div class="card">
+
     <h3>👤 Welcome</h3>
 
-    <p id="buyerName">Loading...</p>
-    <p id="buyerPhone"></p>
-    <p id="buyerLocation"></p>
-     <button onclick="window.location.href='products.html'">
-  🛍️ Browse Products
-     </button>
-    
+    <p id="buyerName">
+      Loading...
+    </p>
 
-    <br>
+    <p id="buyerPhone"></p>
+
+    <p id="buyerLocation"></p>
+
+
+    <button onclick="window.location.href='products.html'">
+      🛍️ Browse Products
+    </button>
+
 
     <button onclick="window.location.href='cart.html'">
       🛒 My Cart
     </button>
-     <br>
 
-<button onclick="window.location.href='orders.html'">
-  📦 My Orders
-</button>
-    <br>
+
+    <button onclick="window.location.href='orders.html'">
+      📦 My Orders
+    </button>
+
 
     <button onclick="logout()">
       🚪 Logout
@@ -64,9 +71,11 @@
 
   </div>
 
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
+
     const SUPABASE_URL =
       "https://ffjofoeiwaiyxecbeuwt.supabase.co";
 
@@ -79,57 +88,117 @@
         SUPABASE_KEY
       );
 
+
     async function loadBuyer() {
 
-      const {
-        data: { user },
-        error: authError
-      } = await supabaseClient.auth.getUser();
+      const name =
+        document.getElementById("buyerName");
 
-      if (authError || !user) {
-        window.location.href = "buyer_login.html";
+      const phone =
+        document.getElementById("buyerPhone");
+
+      const location =
+        document.getElementById("buyerLocation");
+
+
+      const {
+        data: sessionData,
+        error: sessionError
+      } =
+        await supabaseClient.auth.getSession();
+
+
+      if (
+        sessionError ||
+        !sessionData.session
+      ) {
+
+        window.location.href =
+          "buyer_login.html";
+
         return;
       }
+
+
+      const user =
+        sessionData.session.user;
+
 
       const {
         data: profile,
         error: profileError
-      } = await supabaseClient
-        .from("profiles")
-        .select("full_name, phone, location, role")
-        .eq("user_id", user.id)
-        .single();
+      } =
+        await supabaseClient
+          .from("profiles")
+          .select(
+            "full_name, phone, location, role"
+          )
+          .eq("user_id", user.id)
+          .maybeSingle();
 
-      if (profileError || !profile) {
-        document.getElementById("buyerName").textContent =
+
+      if (profileError) {
+
+        console.log(profileError);
+
+        name.textContent =
+          "Failed to load buyer profile.";
+
+        return;
+      }
+
+
+      if (!profile) {
+
+        name.textContent =
           "Buyer profile not found.";
+
         return;
       }
 
-      if (profile.role !== "buyer") {
-        document.getElementById("buyerName").textContent =
+
+      if (
+        String(profile.role).toLowerCase()
+        !== "buyer"
+      ) {
+
+        name.textContent =
           "This is not a buyer account.";
+
         return;
       }
 
-      document.getElementById("buyerName").textContent =
-        "Welcome, " + profile.full_name + " 👋";
 
-      document.getElementById("buyerPhone").textContent =
-        "📞 " + profile.phone;
+      name.textContent =
+        "Welcome, " +
+        profile.full_name +
+        " 👋";
 
-      document.getElementById("buyerLocation").textContent =
-        "📍 " + profile.location;
+
+      phone.textContent =
+        "📞 " +
+        profile.phone;
+
+
+      location.textContent =
+        "📍 " +
+        profile.location;
+
     }
+
 
     async function logout() {
 
       await supabaseClient.auth.signOut();
 
-      window.location.href = "buyer_login.html";
+      window.location.href =
+        "buyer_login.html";
+
     }
 
+
     loadBuyer();
+
   </script>
 
 </body>
