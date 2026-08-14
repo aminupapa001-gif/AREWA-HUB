@@ -237,35 +237,24 @@
     document.getElementById("address").value.trim();
 
   if (!address) {
-
-    alert(
-      "Please enter your delivery address."
-    );
-
+    alert("Please enter your delivery address.");
     return;
   }
 
   if (!cartData.length) {
-
-    alert(
-      "Your cart is empty."
-    );
-
+    alert("Your cart is empty.");
     return;
   }
 
+  let latestOrderId = null;
 
   for (const item of cartData) {
 
-    const product =
-      item.products;
+    const product = item.products;
 
     const totalPrice =
       Number(product.price) *
       Number(item.quantity);
-
-
-    // CREATE ORDER
 
     const {
       data: order,
@@ -275,38 +264,20 @@
         .from("orders")
         .insert({
 
-          buyer_id:
-            user.id,
-
-          seller_id:
-            product.seller_id,
-
-          product_id:
-            item.product_id,
-
-          quantity:
-            item.quantity,
-
-          total_price:
-            totalPrice,
-
-          delivery_address:
-            address,
-
-          status:
-            "pending",
-
-          payment_status:
-            "unpaid"
+          buyer_id: user.id,
+          seller_id: product.seller_id,
+          product_id: item.product_id,
+          quantity: item.quantity,
+          total_price: totalPrice,
+          delivery_address: address,
+          status: "pending",
+          payment_status: "unpaid"
 
         })
         .select()
         .single();
 
-
     if (orderError) {
-
-      console.log(orderError);
 
       alert(
         "❌ Failed to place order: " +
@@ -316,8 +287,8 @@
       return;
     }
 
+    latestOrderId = order.id;
 
-    // CREATE PAYMENT RECORD
 
     const {
       error: paymentError
@@ -326,30 +297,17 @@
         .from("payments")
         .insert({
 
-          order_id:
-            order.id,
-
-          buyer_id:
-            user.id,
-
-          seller_id:
-            product.seller_id,
-
-          amount:
-            totalPrice,
-
-          status:
-            "pending",
-
-          payment_method:
-            "test"
+          order_id: order.id,
+          buyer_id: user.id,
+          seller_id: product.seller_id,
+          amount: totalPrice,
+          status: "pending",
+          payment_method: "test"
 
         });
 
 
     if (paymentError) {
-
-      console.log(paymentError);
 
       alert(
         "❌ Order created, but payment record failed: " +
@@ -363,8 +321,17 @@
 
 
   alert(
-  "✅ Order placed successfully!"
-);
+    "✅ Order placed successfully!"
+  );
+
+
+  if (latestOrderId) {
+
+    window.location.href =
+      "payment.html?order_id=" +
+      latestOrderId;
+
+  }
 
     }
 
