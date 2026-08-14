@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AREWA HUB - Products</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .product {
+      background: white;
+      padding: 18px;
+      margin: 15px 0;
+      border-radius: 12px;
+    }
+
+    .product img {
+      width: 100%;
+      max-width: 300px;
+      border-radius: 10px;
+    }
+
+    button {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>🛍️ AREWA HUB</h1>
+
+  <h2>Browse Products</h2>
+
+  <p id="status">Loading products...</p>
+
+  <div id="products"></div>
+
+  <p>
+    <a href="buyer.html">← Back to Buyer Dashboard</a>
+  </p>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+
+    const SUPABASE_URL =
+      "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+    const supabaseClient =
+      supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+    async function loadProducts() {
+
+      const status =
+        document.getElementById("status");
+
+      const container =
+        document.getElementById("products");
+
+      const {
+        data: products,
+        error
+      } = await supabaseClient
+        .from("products")
+        .select("*")
+        .order("created_at", {
+          ascending: false
+        });
+
+      if (error) {
+
+        console.log(error);
+
+        status.textContent =
+          "❌ Failed to load products: " +
+          error.message;
+
+        return;
+      }
+
+      if (!products || products.length === 0) {
+
+        status.textContent =
+          "No products available yet.";
+
+        return;
+      }
+
+      status.textContent =
+        "Available Products: " +
+        products.length;
+
+      products.forEach(function(product) {
+
+        const div =
+          document.createElement("div");
+
+        div.className = "product";
+
+        div.innerHTML = `
+
+          ${
+            product.image_url
+              ? `<img src="${product.image_url}" alt="${product.name}">`
+              : ""
+          }
+
+          <h3>${product.name}</h3>
+
+          <p>${product.description}</p>
+
+          <p>
+            <strong>Price:</strong>
+            ₦${Number(product.price).toLocaleString()}
+          </p>
+
+          <p>
+            📍 ${product.location}
+          </p>
+
+          <p>
+            📦 Stock: ${product.stock}
+          </p>
+
+          <button onclick="viewProduct('${product.id}')">
+            👀 View Product
+          </button>
+
+        `;
+
+        container.appendChild(div);
+
+      });
+
+    }
+
+    function viewProduct(productId) {
+
+      window.location.href =
+        "product.html?id=" + productId;
+
+    }
+
+    loadProducts();
+
+  </script>
+
+</body>
+  </html>
