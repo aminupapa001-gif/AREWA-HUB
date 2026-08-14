@@ -379,6 +379,17 @@
 
     function checkout() {
 
+  if (cartData.length === 0) {
+
+    alert("Your cart is empty.");
+
+    return;
+  }
+
+  window.location.href = "checkout.html";
+
+    }
+
       if (cartData.length === 0) {
 
         alert("Your cart is empty.");
