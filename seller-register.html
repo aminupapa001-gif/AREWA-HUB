@@ -27,7 +27,12 @@
     <input type="tel" id="phone" required><br><br>
 
     <label>Location</label><br>
-    <input type="text" id="location" placeholder="e.g. Kano" required><br><br>
+    <input
+      type="text"
+      id="location"
+      placeholder="e.g. Kano"
+      required
+    ><br><br>
 
     <button type="submit">🏪 Create Seller Account</button>
 
@@ -82,17 +87,23 @@
           data: authData,
           error: authError
         } = await supabaseClient.auth.signUp({
-  email: email,
-  password: password,
-  options: {
-    data: {
-      full_name: full_name,
-      role: "seller",
-      phone: phone,
-      location: location
-    }
-  }
-});
+
+          email: email,
+
+          password: password,
+
+          options: {
+
+            data: {
+              full_name: full_name,
+              role: "seller",
+              phone: phone,
+              location: location
+            }
+
+          }
+
+        });
 
         if (authError) {
 
@@ -103,31 +114,17 @@
           return;
         }
 
-        const userId =
-          authData.user.id;
-
-        const { error: profileError } =
-          await supabaseClient
-            .from("profiles")
-            .insert({
-              user_id: userId,
-              full_name: full_name,
-              role: "seller",
-              phone: phone,
-              location: location
-            });
-
-        if (profileError) {
+        if (!authData.user) {
 
           message.textContent =
-            "Account created, but seller profile failed: " +
-            profileError.message;
+            "Account creation failed: User was not returned.";
 
           return;
         }
 
         message.textContent =
-          "✅ Seller registration successful! " +
+          "✅ Seller account created successfully! " +
+          "Your seller profile was created automatically. " +
           "Check your email to confirm your account.";
 
         document.getElementById("sellerForm").reset();
