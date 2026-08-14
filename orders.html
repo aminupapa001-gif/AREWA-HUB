@@ -198,28 +198,83 @@
 
           <div class="status">
 
-            <p>
-              🕐 Status:
-              <strong>${order.status}</strong>
-            </p>
+  <p>
+    🕐 Status:
+    <strong>${order.status}</strong>
+  </p>
 
-            <p>
-              💳 Payment:
-              <strong>${order.payment_status}</strong>
-            </p>
+  <p>
+    💳 Payment:
+    <strong>${order.payment_status}</strong>
+  </p>
 
-          </div>
+  ${
+    order.status === "shipped"
+    ? `
+      <hr>
 
-        `;
+      <p>
+        🚚 Your order has been shipped.
+      </p>
 
+      <button onclick="confirmReceived('${order.id}')">
+        ✅ Confirm Received
+      </button>
+    `
+    : ""
+  }
 
-        container.appendChild(div);
+</div>
+
+`;
+
+container.appendChild(div);
+          
 
       });
 
     }
 
+    async function confirmReceived(orderId) {
 
+  const confirmOrder =
+    confirm(
+      "Have you received this order?"
+    );
+
+  if (!confirmOrder) {
+    return;
+  }
+
+
+  const { error } =
+    await supabaseClient
+      .from("orders")
+      .update({
+        status: "delivered"
+      })
+      .eq("id", orderId);
+
+
+  if (error) {
+
+    alert(
+      "❌ Failed to confirm order: " +
+      error.message
+    );
+
+    return;
+  }
+
+
+  alert(
+    "✅ Order confirmed as received!"
+  );
+
+
+  loadOrders();
+
+    }
     function goBack() {
 
       window.location.href =
