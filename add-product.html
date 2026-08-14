@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AREWA HUB - Add Product</title>
+</head>
+
+<body>
+
+  <h1>🛍️ AREWA HUB</h1>
+
+  <h2>➕ Add Product</h2>
+
+  <form id="productForm">
+
+    <label>Product Name</label><br>
+    <input type="text" id="name" required><br><br>
+
+    <label>Description</label><br>
+    <textarea id="description" required></textarea><br><br>
+
+    <label>Price (₦)</label><br>
+    <input type="number" id="price" min="0" required><br><br>
+
+    <label>Location</label><br>
+    <input type="text" id="location" required><br><br>
+
+    <label>Stock</label><br>
+    <input type="number" id="stock" min="1" value="1" required><br><br>
+
+    <label>Image URL</label><br>
+    <input type="url" id="image_url"><br><br>
+
+    <button type="submit">➕ Add Product</button>
+
+  </form>
+
+  <p id="message"></p>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+
+    const SUPABASE_URL =
+      "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+    const supabaseClient =
+      supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+    document.getElementById("productForm").addEventListener(
+      "submit",
+      async function(event) {
+
+        event.preventDefault();
+
+        const message =
+          document.getElementById("message");
+
+        message.textContent = "Adding product...";
+
+        const {
+          data: { user },
+          error: authError
+        } = await supabaseClient.auth.getUser();
+
+        if (authError || !user) {
+
+          message.textContent =
+            "Please login first.";
+
+          return;
+        }
+
+        const name =
+          document.getElementById("name").value.trim();
+
+        const description =
+          document.getElementById("description").value.trim();
+
+        const price =
+          Number(document.getElementById("price").value);
+
+        const location =
+          document.getElementById("location").value.trim();
+
+        const stock =
+          Number(document.getElementById("stock").value);
+
+        const image_url =
+          document.getElementById("image_url").value.trim();
+
+        const { error } =
+          await supabaseClient
+            .from("products")
+            .insert({
+              seller_id: user.id,
+              name: name,
+              description: description,
+              price: price,
+              location: location,
+              stock: stock,
+              image_url: image_url
+            });
+
+        if (error) {
+
+          console.log(error);
+
+          message.textContent =
+            "Error: " + error.message;
+
+          return;
+        }
+
+        message.textContent =
+          "✅ Product added successfully!";
+
+        document.getElementById("productForm").reset();
+
+      }
+    );
+
+  </script>
+
+</body>
+</html>
