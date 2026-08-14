@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AREWA HUB - Seller Registration</title>
+</head>
+
+<body>
+
+  <h1>🏪 AREWA HUB</h1>
+
+  <h2>Seller Registration</h2>
+
+  <form id="sellerForm">
+
+    <label>Full Name</label><br>
+    <input type="text" id="full_name" required><br><br>
+
+    <label>Email</label><br>
+    <input type="email" id="email" required><br><br>
+
+    <label>Password</label><br>
+    <input type="password" id="password" minlength="6" required><br><br>
+
+    <label>Phone</label><br>
+    <input type="tel" id="phone" required><br><br>
+
+    <label>Location</label><br>
+    <input type="text" id="location" placeholder="e.g. Kano" required><br><br>
+
+    <button type="submit">🏪 Create Seller Account</button>
+
+  </form>
+
+  <p id="message"></p>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+
+    const SUPABASE_URL =
+      "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+    const supabaseClient =
+      supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+    document.getElementById("sellerForm").addEventListener(
+      "submit",
+      async function(event) {
+
+        event.preventDefault();
+
+        const message =
+          document.getElementById("message");
+
+        message.textContent =
+          "Creating seller account...";
+
+        const email =
+          document.getElementById("email").value.trim();
+
+        const password =
+          document.getElementById("password").value;
+
+        const full_name =
+          document.getElementById("full_name").value.trim();
+
+        const phone =
+          document.getElementById("phone").value.trim();
+
+        const location =
+          document.getElementById("location").value.trim();
+
+        const {
+          data: authData,
+          error: authError
+        } = await supabaseClient.auth.signUp({
+          email: email,
+          password: password
+        });
+
+        if (authError) {
+
+          message.textContent =
+            "Account creation failed: " +
+            authError.message;
+
+          return;
+        }
+
+        const userId =
+          authData.user.id;
+
+        const { error: profileError } =
+          await supabaseClient
+            .from("profiles")
+            .insert({
+              user_id: userId,
+              full_name: full_name,
+              role: "seller",
+              phone: phone,
+              location: location
+            });
+
+        if (profileError) {
+
+          message.textContent =
+            "Account created, but seller profile failed: " +
+            profileError.message;
+
+          return;
+        }
+
+        message.textContent =
+          "✅ Seller registration successful! " +
+          "Check your email to confirm your account.";
+
+        document.getElementById("sellerForm").reset();
+
+      }
+    );
+
+  </script>
+
+</body>
+</html>
