@@ -115,6 +115,7 @@
 
     let currentProduct = null;
 
+
     async function loadProduct() {
 
       const status =
@@ -184,129 +185,30 @@
           `<img src="${product.image_url}" alt="${product.name}">`;
 
       }
-
     }
+
 
     async function addToCart() {
 
-  if (!currentProduct) {
-    return;
-  }
-
-  const {
-    data: { user },
-    error: authError
-  } = await supabaseClient.auth.getUser();
-
-  if (authError || !user) {
-
-    alert("Please login as a buyer first.");
-
-    window.location.href =
-      "buyer_login.html";
-
-    return;
-  }
-
-  const quantity =
-    Number(
-      document.getElementById("quantity").value
-    );
-
-  if (quantity < 1) {
-
-    alert("Quantity must be at least 1.");
-
-    return;
-  }
-
-  if (quantity > currentProduct.stock) {
-
-    alert("Not enough stock available.");
-
-    return;
-  }
-
-  const {
-    data: existingCart,
-    error: cartCheckError
-  } = await supabaseClient
-    .from("cart")
-    .select("id, quantity")
-    .eq("buyer_id", user.id)
-    .eq("product_id", currentProduct.id)
-    .maybeSingle();
-
-  if (cartCheckError) {
-
-    alert(
-      "Cart error: " +
-      cartCheckError.message
-    );
-
-    return;
-  }
-
-  if (existingCart) {
-
-    const newQuantity =
-      existingCart.quantity + quantity;
-
-    if (newQuantity > currentProduct.stock) {
-
-      alert("Not enough stock available.");
-
-      return;
-    }
-
-    const {
-      error: updateError
-    } = await supabaseClient
-      .from("cart")
-      .update({
-        quantity: newQuantity
-      })
-      .eq("id", existingCart.id);
-
-    if (updateError) {
-
-      alert(
-        "Failed to update cart: " +
-        updateError.message
-      );
-
-      return;
-    }
-
-  } else {
-
-    const {
-      error: insertError
-    } = await supabaseClient
-      .from("cart")
-      .insert({
-        buyer_id: user.id,
-        product_id: currentProduct.id,
-        quantity: quantity
-      });
-
-    if (insertError) {
-
-      alert(
-        "Failed to add to cart: " +
-        insertError.message
-      );
-
-      return;
-    }
-
-  }
-
-  alert("🛒 Product added to cart successfully!");
-
-    }
-
       if (!currentProduct) {
+
+        alert("Product is still loading.");
+
+        return;
+      }
+
+      const {
+        data: { user },
+        error: authError
+      } = await supabaseClient.auth.getUser();
+
+      if (authError || !user) {
+
+        alert("Please login as a buyer first.");
+
+        window.location.href =
+          "buyer_login.html";
+
         return;
       }
 
@@ -328,6 +230,85 @@
 
         return;
       }
+
+
+      const {
+        data: existingCart,
+        error: cartCheckError
+      } = await supabaseClient
+        .from("cart")
+        .select("id, quantity")
+        .eq("buyer_id", user.id)
+        .eq("product_id", currentProduct.id)
+        .maybeSingle();
+
+
+      if (cartCheckError) {
+
+        alert(
+          "Cart error: " +
+          cartCheckError.message
+        );
+
+        return;
+      }
+
+
+      if (existingCart) {
+
+        const newQuantity =
+          Number(existingCart.quantity) +
+          quantity;
+
+        if (newQuantity > currentProduct.stock) {
+
+          alert("Not enough stock available.");
+
+          return;
+        }
+
+        const {
+          error: updateError
+        } = await supabaseClient
+          .from("cart")
+          .update({
+            quantity: newQuantity
+          })
+          .eq("id", existingCart.id);
+
+        if (updateError) {
+
+          alert(
+            "Failed to update cart: " +
+            updateError.message
+          );
+
+          return;
+        }
+
+      } else {
+
+        const {
+          error: insertError
+        } = await supabaseClient
+          .from("cart")
+          .insert({
+            buyer_id: user.id,
+            product_id: currentProduct.id,
+            quantity: quantity
+          });
+
+        if (insertError) {
+
+          alert(
+            "Failed to add to cart: " +
+            insertError.message
+          );
+
+          return;
+        }
+      }
+
 
       alert(
         "🛒 Product added to cart successfully!"
@@ -335,9 +316,13 @@
 
     }
 
+
     async function buyNow() {
 
       if (!currentProduct) {
+
+        alert("Product is still loading.");
+
         return;
       }
 
@@ -361,14 +346,15 @@
       }
 
       alert(
-        "⚡ Buy Now selected. Order system will be connected next."
+        "⚡ Buy Now selected. Checkout system will be connected next."
       );
 
     }
+
 
     loadProduct();
 
   </script>
 
 </body>
-</html>
+  </html>
