@@ -3,24 +3,398 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AREWA HUB - Cart</title>
+  <title>AREWA HUB - My Cart</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .cart-item {
+      background: white;
+      padding: 18px;
+      margin: 15px 0;
+      border-radius: 12px;
+    }
+
+    button {
+      padding: 10px 15px;
+      margin: 5px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .total {
+      background: white;
+      padding: 18px;
+      border-radius: 12px;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 
 <body>
 
   <h1>🛒 AREWA HUB</h1>
 
-  <h2>Shopping Cart</h2>
+  <h2>My Cart</h2>
 
-  <p>Selected products will appear here.</p>
+  <p id="status">Loading cart...</p>
 
-  <h3>Order Summary</h3>
+  <div id="cartItems"></div>
 
-  <p>Products: 0</p>
-  <p>Total: ₦0</p>
+  <div class="total">
 
-  <button>Continue Shopping</button>
-  <button>Proceed to Checkout</button>
+    <h3>Order Summary</h3>
+
+    <p>
+      Products:
+      <span id="productCount">0</span>
+    </p>
+
+    <p>
+      Total:
+      ₦<span id="cartTotal">0</span>
+    </p>
+
+    <button onclick="continueShopping()">
+      🛍️ Continue Shopping
+    </button>
+
+    <button onclick="checkout()">
+      💳 Proceed to Checkout
+    </button>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+
+    const SUPABASE_URL =
+      "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+    const supabaseClient =
+      supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+    let cartData = [];
+
+    async function loadCart() {
+
+      const status =
+        document.getElementById("status");
+
+      const {
+        data: { user },
+        error: authError
+      } = await supabaseClient.auth.getUser();
+
+      if (authError || !user) {
+
+        status.textContent =
+          "❌ Please login as a buyer first.";
+
+        return;
+      }
+
+      const {
+        data,
+        error
+      } = await supabaseClient
+        .from("cart")
+        .select(`
+          id,
+          quantity,
+          product_id,
+          products (
+            name,
+            description,
+            price,
+            location,
+            stock,
+            image_url
+          )
+        `)
+        .eq("buyer_id", user.id)
+        .order("created_at", {
+          ascending: false
+        });
+
+      if (error) {
+
+        console.log(error);
+
+        status.textContent =
+          "❌ Failed to load cart: " +
+          error.message;
+
+        return;
+      }
+
+      cartData = data || [];
+
+      renderCart();
+
+    }
+
+    function renderCart() {
+
+      const status =
+        document.getElementById("status");
+
+      const container =
+        document.getElementById("cartItems");
+
+      const productCount =
+        document.getElementById("productCount");
+
+      const cartTotal =
+        document.getElementById("cartTotal");
+
+      container.innerHTML = "";
+
+      if (cartData.length === 0) {
+
+        status.textContent =
+          "Your cart is empty.";
+
+        productCount.textContent = "0";
+
+        cartTotal.textContent = "0";
+
+        return;
+      }
+
+      status.textContent =
+        "Cart loaded successfully.";
+
+      let total = 0;
+
+      let count = 0;
+
+      cartData.forEach(function(item) {
+
+        if (!item.products) {
+          return;
+        }
+
+        const product =
+          item.products;
+
+        const itemTotal =
+          Number(product.price) *
+          Number(item.quantity);
+
+        total += itemTotal;
+
+        count += Number(item.quantity);
+
+        const div =
+          document.createElement("div");
+
+        div.className =
+          "cart-item";
+
+        div.innerHTML = `
+
+          ${
+            product.image_url
+              ? `<img
+                   src="${product.image_url}"
+                   style="width:150px;border-radius:10px;"
+                   alt="${product.name}"
+                 >`
+              : ""
+          }
+
+          <h3>${product.name}</h3>
+
+          <p>${product.description}</p>
+
+          <p>
+            Price:
+            ₦${Number(product.price).toLocaleString()}
+          </p>
+
+          <p>
+            📍 ${product.location}
+          </p>
+
+          <p>
+            Quantity:
+            <strong>${item.quantity}</strong>
+          </p>
+
+          <p>
+            Item Total:
+            <strong>
+              ₦${itemTotal.toLocaleString()}
+            </strong>
+          </p>
+
+          <button onclick="increaseQuantity('${item.id}')">
+            ➕
+          </button>
+
+          <button onclick="decreaseQuantity('${item.id}')">
+            ➖
+          </button>
+
+          <button onclick="removeItem('${item.id}')">
+            🗑️ Remove
+          </button>
+
+        `;
+
+        container.appendChild(div);
+
+      });
+
+      productCount.textContent =
+        count;
+
+      cartTotal.textContent =
+        total.toLocaleString();
+
+    }
+
+    async function increaseQuantity(cartId) {
+
+      const item =
+        cartData.find(function(item) {
+          return item.id === cartId;
+        });
+
+      if (!item) return;
+
+      const newQuantity =
+        item.quantity + 1;
+
+      if (newQuantity > item.products.stock) {
+
+        alert("Not enough stock available.");
+
+        return;
+      }
+
+      await updateQuantity(
+        cartId,
+        newQuantity
+      );
+
+    }
+
+    async function decreaseQuantity(cartId) {
+
+      const item =
+        cartData.find(function(item) {
+          return item.id === cartId;
+        });
+
+      if (!item) return;
+
+      const newQuantity =
+        item.quantity - 1;
+
+      if (newQuantity < 1) {
+
+        await removeItem(cartId);
+
+        return;
+      }
+
+      await updateQuantity(
+        cartId,
+        newQuantity
+      );
+
+    }
+
+    async function updateQuantity(
+      cartId,
+      quantity
+    ) {
+
+      const {
+        error
+      } = await supabaseClient
+        .from("cart")
+        .update({
+          quantity: quantity
+        })
+        .eq("id", cartId);
+
+      if (error) {
+
+        alert(
+          "Failed to update cart: " +
+          error.message
+        );
+
+        return;
+      }
+
+      loadCart();
+
+    }
+
+    async function removeItem(cartId) {
+
+      const {
+        error
+      } = await supabaseClient
+        .from("cart")
+        .delete()
+        .eq("id", cartId);
+
+      if (error) {
+
+        alert(
+          "Failed to remove item: " +
+          error.message
+        );
+
+        return;
+      }
+
+      loadCart();
+
+    }
+
+    function continueShopping() {
+
+      window.location.href =
+        "products.html";
+
+    }
+
+    function checkout() {
+
+      if (cartData.length === 0) {
+
+        alert("Your cart is empty.");
+
+        return;
+      }
+
+      alert(
+        "Checkout system will be connected next."
+      );
+
+    }
+
+    loadCart();
+
+  </script>
 
 </body>
-</html>
+  </html>
