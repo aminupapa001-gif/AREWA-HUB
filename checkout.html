@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AREWA HUB - Checkout</title>
 
-  <style>
+  <style>by
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
@@ -233,97 +233,142 @@
 
     async function placeOrder() {
 
-      const address =
-        document.getElementById("address").value.trim();
+  const address =
+    document.getElementById("address").value.trim();
+
+  if (!address) {
+
+    alert(
+      "Please enter your delivery address."
+    );
+
+    return;
+  }
+
+  if (!cartData.length) {
+
+    alert(
+      "Your cart is empty."
+    );
+
+    return;
+  }
 
 
-      if (!address) {
+  for (const item of cartData) {
 
-        alert(
-          "Please enter your delivery address."
-        );
+    const product =
+      item.products;
 
-        return;
-      }
-
-
-      if (!cartData.length) {
-
-        alert(
-          "Your cart is empty."
-        );
-
-        return;
-      }
+    const totalPrice =
+      Number(product.price) *
+      Number(item.quantity);
 
 
-      for (const item of cartData) {
+    // CREATE ORDER
 
-        const product =
-          item.products;
+    const {
+      data: order,
+      error: orderError
+    } =
+      await supabaseClient
+        .from("orders")
+        .insert({
 
+          buyer_id:
+            user.id,
 
-        const totalPrice =
-          Number(product.price) *
-          Number(item.quantity);
+          seller_id:
+            product.seller_id,
 
+          product_id:
+            item.product_id,
 
-        const {
-          error
-        } =
-          await supabaseClient
-            .from("orders")
-            .insert({
+          quantity:
+            item.quantity,
 
-              buyer_id:
-                user.id,
+          total_price:
+            totalPrice,
 
-              seller_id:
-                product.seller_id,
+          delivery_address:
+            address,
 
-              product_id:
-                item.product_id,
+          status:
+            "pending",
 
-              quantity:
-                item.quantity,
+          payment_status:
+            "unpaid"
 
-              total_price:
-                totalPrice,
-
-              delivery_address:
-                address,
-
-              status:
-                "pending",
-
-              payment_status:
-                "unpaid"
-
-            });
+        })
+        .select()
+        .single();
 
 
-        if (error) {
+    if (orderError) {
 
-          console.log(error);
-
-          alert(
-            "❌ Failed to place order: " +
-            error.message
-          );
-
-          return;
-        }
-
-      }
-
+      console.log(orderError);
 
       alert(
-        "✅ Order placed successfully!"
+        "❌ Failed to place order: " +
+        orderError.message
       );
 
+      return;
+    }
 
-      window.location.href =
-        "buyer.html";
+
+    // CREATE PAYMENT RECORD
+
+    const {
+      error: paymentError
+    } =
+      await supabaseClient
+        .from("payments")
+        .insert({
+
+          order_id:
+            order.id,
+
+          buyer_id:
+            user.id,
+
+          seller_id:
+            product.seller_id,
+
+          amount:
+            totalPrice,
+
+          status:
+            "pending",
+
+          payment_method:
+            "test"
+
+        });
+
+
+    if (paymentError) {
+
+      console.log(paymentError);
+
+      alert(
+        "❌ Order created, but payment record failed: " +
+        paymentError.message
+      );
+
+      return;
+    }
+
+  }
+
+
+  alert(
+    "✅ Order placed successfully!"
+  );
+
+
+  window.location.href =
+    "buyer.html";
 
     }
 
