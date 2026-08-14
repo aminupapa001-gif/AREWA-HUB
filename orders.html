@@ -69,178 +69,193 @@
 
     async function loadOrders() {
 
-      const status =
-        document.getElementById("status");
+  const status =
+    document.getElementById("status");
 
-      const container =
-        document.getElementById("orders");
-
-
-      const {
-        data: { user },
-        error: authError
-      } =
-        await supabaseClient.auth.getUser();
+  const container =
+    document.getElementById("orders");
 
 
-      if (authError || !user) {
-
-        status.textContent =
-          "❌ Please login as a buyer first.";
-
-        return;
-      }
+  status.textContent =
+    "Loading orders...";
 
 
-      const {
-        data: orders,
-        error
-      } =
-        await supabaseClient
-          .from("orders")
-          .select(`
-            id,
-            quantity,
-            total_price,
-            delivery_address,
-            status,
-            payment_status,
-            created_at,
-            products (
-              name,
-              description,
-              price
-            )
-          `)
-          .eq("buyer_id", user.id)
-          .order("created_at", {
-            ascending: false
-          });
+  const {
+    data: { user },
+    error: authError
+  } =
+    await supabaseClient.auth.getUser();
 
 
-      if (error) {
+  if (authError || !user) {
 
-        console.log(error);
+    status.textContent =
+      "❌ Please login as a buyer first.";
 
-        status.textContent =
-          "❌ Failed to load orders: " +
-          error.message;
-
-        return;
-      }
-
-
-      if (!orders || orders.length === 0) {
-
-        status.textContent =
-          "You have no orders yet.";
-
-        return;
-      }
-
-
-      status.textContent =
-        "Orders loaded successfully.";
-
-
-      container.innerHTML = "";
-
-
-      orders.forEach(function(order) {
-
-        const product =
-          order.products;
-
-
-        const div =
-          document.createElement("div");
-
-        div.className =
-          "order";
-
-
-        const date =
-          new Date(
-            order.created_at
-          ).toLocaleString();
-
-
-        div.innerHTML = `
-
-          <h3>
-            📦 Order
-          </h3>
-
-          <p>
-            <strong>Product:</strong>
-            ${product ? product.name : "Product unavailable"}
-          </p>
-
-          <p>
-            <strong>Quantity:</strong>
-            ${order.quantity}
-          </p>
-
-          <p>
-            <strong>Total:</strong>
-            ₦${Number(order.total_price).toLocaleString()}
-          </p>
-
-          <p>
-            <strong>Delivery Address:</strong>
-            ${order.delivery_address}
-          </p>
-
-          <p>
-            <strong>Order Date:</strong>
-            ${date}
-          </p>
-
-          <div class="status">
-
-  <p>
-    🕐 Status:
-    <strong>${order.status}</strong>
-  </p>
-  <p>
-  💳 Payment:
-  <strong>${order.payment_status}</strong>
-</p>
-
-${
-  order.payment_status === "unpaid"
-  ? `
-    <button onclick="payForOrder('${order.id}')">
-      💳 Pay Now
-    </button>
-  `
-  : ""
-}
-
-  ${
-    order.status === "shipped"
-    ? `
-      <hr>
-
-      <p>
-        🚚 Your order has been shipped.
-      </p>
-
-      <button onclick="confirmReceived('${order.id}')">
-        ✅ Confirm Received
-      </button>
-    `
-    : ""
+    return;
   }
 
-</div>
 
-`;
+  const {
+    data: orders,
+    error
+  } =
+    await supabaseClient
+      .from("orders")
+      .select(`
+        id,
+        quantity,
+        total_price,
+        delivery_address,
+        status,
+        payment_status,
+        created_at,
+        products (
+          name
+        )
+      `)
+      .eq(
+        "buyer_id",
+        user.id
+      )
+      .order(
+        "created_at",
+        {
+          ascending: false
+        }
+      );
 
-container.appendChild(div);
-          
 
-      });
+  if (error) {
+
+    console.log(error);
+
+    status.textContent =
+      "❌ Failed to load orders: " +
+      error.message;
+
+    return;
+  }
+
+
+  container.innerHTML = "";
+
+
+  if (!orders || !orders.length) {
+
+    status.textContent =
+      "You have no orders yet.";
+
+    return;
+  }
+
+
+  status.textContent =
+    "Orders loaded successfully.";
+
+
+  orders.forEach(
+    (order) => {
+
+      const div =
+        document.createElement(
+          "div"
+        );
+
+      div.className =
+        "order-card";
+
+
+      div.innerHTML = `
+
+        <h3>
+          📦 Order
+        </h3>
+
+        <p>
+          Product:
+          ${order.products?.name || "Product"}
+        </p>
+
+        <p>
+          Quantity:
+          ${order.quantity}
+        </p>
+
+        <p>
+          Total:
+          ₦${Number(
+            order.total_price
+          ).toLocaleString()}
+        </p>
+
+        <p>
+          Delivery Address:
+          ${order.delivery_address}
+        </p>
+
+        <p>
+          Order Date:
+          ${new Date(
+            order.created_at
+          ).toLocaleString()}
+        </p>
+
+        <div class="status">
+
+          <p>
+            🕐 Status:
+            <strong>
+              ${order.status}
+            </strong>
+          </p>
+
+          <p>
+            💳 Payment:
+            <strong>
+              ${order.payment_status}
+            </strong>
+          </p>
+
+          ${
+            order.payment_status === "unpaid"
+            ? `
+              <button
+                onclick="payForOrder('${order.id}')"
+              >
+                💳 Pay Now
+              </button>
+            `
+            : ""
+          }
+
+          ${
+            order.status === "shipped"
+            ? `
+              <hr>
+
+              <p>
+                🚚 Your order has been shipped.
+              </p>
+
+              <button
+                onclick="confirmReceived('${order.id}')"
+              >
+                ✅ Confirm Received
+              </button>
+            `
+            : ""
+          }
+
+        </div>
+
+      `;
+
+
+      container.appendChild(div);
+
+    }
+  );
 
     }
 
