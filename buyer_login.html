@@ -75,12 +75,44 @@
           return;
         }
 
+        const user = data.user;
+
+        const { data: profile, error: profileError } =
+          await supabaseClient
+            .from("profiles")
+            .select("role")
+            .eq("user_id", user.id)
+            .single();
+
+        if (profileError || !profile) {
+
+          console.log(profileError);
+
+          await supabaseClient.auth.signOut();
+
+          message.textContent =
+            "Buyer profile not found.";
+
+          return;
+        }
+
+        if (profile.role !== "buyer") {
+
+          await supabaseClient.auth.signOut();
+
+          message.textContent =
+            "This account is not a buyer account.";
+
+          return;
+        }
+
         message.textContent =
-          "Login successful!";
+          "Buyer login successful!";
 
         setTimeout(function() {
           window.location.href = "buyer.html";
         }, 1000);
+
       }
     );
   </script>
