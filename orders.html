@@ -202,11 +202,20 @@
     🕐 Status:
     <strong>${order.status}</strong>
   </p>
-
   <p>
-    💳 Payment:
-    <strong>${order.payment_status}</strong>
-  </p>
+  💳 Payment:
+  <strong>${order.payment_status}</strong>
+</p>
+
+${
+  order.payment_status === "unpaid"
+  ? `
+    <button onclick="payForOrder('${order.id}')">
+      💳 Pay Now
+    </button>
+  `
+  : ""
+}
 
   ${
     order.status === "shipped"
