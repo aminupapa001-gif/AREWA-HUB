@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AREWA HUB - Payment</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      margin-top: 20px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 15px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>💳 AREWA HUB</h1>
+
+  <h2>Payment</h2>
+
+  <div class="card">
+
+    <p>
+      <strong>Order:</strong>
+      <span id="orderId">Loading...</span>
+    </p>
+
+    <p>
+      <strong>Amount:</strong>
+      ₦<span id="amount">0</span>
+    </p>
+
+    <p>
+      <strong>Payment Status:</strong>
+      <span id="paymentStatus">Loading...</span>
+    </p>
+
+    <button id="payButton" onclick="payNow()">
+      💳 Pay Now
+    </button>
+
+  </div>
+
+  <br>
+
+  <button onclick="window.location.href='buyer.html'">
+    ← Back to Buyer Dashboard
+  </button>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+
+    const SUPABASE_URL =
+      "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+    const supabaseClient =
+      supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+
+    let currentPayment = null;
+
+
+    async function loadPayment() {
+
+      const params =
+        new URLSearchParams(
+          window.location.search
+        );
+
+      const orderId =
+        params.get("order_id");
+
+
+      if (!orderId) {
+
+        document.getElementById(
+          "paymentStatus"
+        ).textContent =
+          "❌ Order not found.";
+
+        document.getElementById(
+          "payButton"
+        ).style.display =
+          "none";
+
+        return;
+      }
+
+
+      const {
+        data: { user },
+        error: authError
+      } =
+        await supabaseClient.auth.getUser();
+
+
+      if (
+        authError ||
+        !user
+      ) {
+
+        window.location.href =
+          "buyer_login.html";
+
+        return;
+      }
+
+
+      const {
+        data: payment,
+        error
+      } =
+        await supabaseClient
+          .from("payments")
+          .select(
+            "id, order_id, amount, status"
+          )
+          .eq(
+            "order_id",
+            orderId
+          )
+          .eq(
+            "buyer_id",
+            user.id
+          )
+          .maybeSingle();
+
+
+      if (error) {
+
+        document.getElementById(
+          "paymentStatus"
+        ).textContent =
+          "❌ Failed to load payment: " +
+          error.message;
+
+        return;
+      }
+
+
+      if (!payment) {
+
+        document.getElementById(
+          "paymentStatus"
+        ).textContent =
+          "❌ Payment record not found.";
+
+        document.getElementById(
+          "payButton"
+        ).style.display =
+          "none";
+
+        return;
+      }
+
+
+      currentPayment =
+        payment;
+
+
+      document.getElementById(
+        "orderId"
+      ).textContent =
+        payment.order_id;
+
+
+      document.getElementById(
+        "amount"
+      ).textContent =
+        Number(
+          payment.amount
+        ).toLocaleString();
+
+
+      document.getElementById(
+        "paymentStatus"
+      ).textContent =
+        payment.status;
+
+
+      if (
+        payment.status !== "pending"
+      ) {
+
+        document.getElementById(
+          "payButton"
+        ).style.display =
+          "none";
+
+      }
+
+    }
+
+
+    async function payNow() {
+
+      if (!currentPayment) {
+        return;
+      }
+
+
+      const {
+        error
+      } =
+        await supabaseClient
+          .from("payments")
+          .update({
+
+            status:
+              "paid"
+
+          })
+          .eq(
+            "id",
+            currentPayment.id
+          );
+
+
+      if (error) {
+
+        alert(
+          "❌ Payment failed: " +
+          error.message
+        );
+
+        return;
+      }
+
+
+      alert(
+        "✅ Test payment successful!"
+      );
+
+
+      loadPayment();
+
+    }
+
+
+    loadPayment();
+
+  </script>
+
+</body>
+</html>
