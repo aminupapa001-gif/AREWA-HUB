@@ -235,12 +235,49 @@ container.appendChild(div);
 
     }
 
+  
     async function confirmReceived(orderId) {
 
   const confirmOrder =
     confirm(
       "Have you received this order?"
     );
+
+  if (!confirmOrder) {
+    return;
+  }
+
+
+  const {
+    error
+  } =
+    await supabaseClient.rpc(
+      "confirm_order_received",
+      {
+        p_order_id: orderId
+      }
+    );
+
+
+  if (error) {
+
+    alert(
+      "❌ Failed to confirm order: " +
+      error.message
+    );
+
+    return;
+  }
+
+
+  alert(
+    "✅ Order received successfully!"
+  );
+
+
+  loadOrders();
+
+    }
 
   if (!confirmOrder) {
     return;
