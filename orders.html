@@ -247,7 +247,6 @@ container.appendChild(div);
     return;
   }
 
-
   const {
     error
   } =
@@ -258,7 +257,6 @@ container.appendChild(div);
       }
     );
 
-
   if (error) {
 
     alert(
@@ -268,46 +266,10 @@ container.appendChild(div);
 
     return;
   }
-
 
   alert(
     "✅ Order received successfully!"
   );
-
-
-  loadOrders();
-
-    }
-
-  if (!confirmOrder) {
-    return;
-  }
-
-
-  const { error } =
-    await supabaseClient
-      .from("orders")
-      .update({
-        status: "delivered"
-      })
-      .eq("id", orderId);
-
-
-  if (error) {
-
-    alert(
-      "❌ Failed to confirm order: " +
-      error.message
-    );
-
-    return;
-  }
-
-
-  alert(
-    "✅ Order confirmed as received!"
-  );
-
 
   loadOrders();
 
