@@ -12,7 +12,9 @@
 
   <h2>➕ Add Product</h2>
 
-  <form id="productForm">
+  <p id="status">Checking account...</p>
+
+  <form id="productForm" style="display:none;">
 
     <label>Product Name</label><br>
     <input type="text" id="name" required><br><br>
@@ -54,6 +56,59 @@
         SUPABASE_KEY
       );
 
+    async function checkSeller() {
+
+      const status =
+        document.getElementById("status");
+
+      const form =
+        document.getElementById("productForm");
+
+      const {
+        data: { user },
+        error: authError
+      } = await supabaseClient.auth.getUser();
+
+      if (authError || !user) {
+
+        status.textContent =
+          "❌ Please login first.";
+
+        return;
+      }
+
+      const {
+        data: profile,
+        error: profileError
+      } = await supabaseClient
+        .from("profiles")
+        .select("role")
+        .eq("user_id", user.id)
+        .single();
+
+      if (profileError || !profile) {
+
+        status.textContent =
+          "❌ Profile not found.";
+
+        return;
+      }
+
+      if (profile.role !== "seller") {
+
+        status.textContent =
+          "❌ Only seller accounts can add products.";
+
+        return;
+      }
+
+      status.textContent =
+        "✅ Seller verified. You can add a product.";
+
+      form.style.display = "block";
+    }
+
+
     document.getElementById("productForm").addEventListener(
       "submit",
       async function(event) {
@@ -63,7 +118,8 @@
         const message =
           document.getElementById("message");
 
-        message.textContent = "Adding product...";
+        message.textContent =
+          "Adding product...";
 
         const {
           data: { user },
@@ -73,7 +129,7 @@
         if (authError || !user) {
 
           message.textContent =
-            "Please login first.";
+            "❌ Please login first.";
 
           return;
         }
@@ -96,6 +152,7 @@
         const image_url =
           document.getElementById("image_url").value.trim();
 
+
         const { error } =
           await supabaseClient
             .from("products")
@@ -109,15 +166,17 @@
               image_url: image_url
             });
 
+
         if (error) {
 
           console.log(error);
 
           message.textContent =
-            "Error: " + error.message;
+            "❌ Error: " + error.message;
 
           return;
         }
+
 
         message.textContent =
           "✅ Product added successfully!";
@@ -126,6 +185,9 @@
 
       }
     );
+
+
+    checkSeller();
 
   </script>
 
