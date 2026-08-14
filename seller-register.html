@@ -82,9 +82,17 @@
           data: authData,
           error: authError
         } = await supabaseClient.auth.signUp({
-          email: email,
-          password: password
-        });
+  email: email,
+  password: password,
+  options: {
+    data: {
+      full_name: full_name,
+      role: "seller",
+      phone: phone,
+      location: location
+    }
+  }
+});
 
         if (authError) {
 
