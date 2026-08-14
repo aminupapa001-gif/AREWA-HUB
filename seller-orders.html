@@ -242,32 +242,66 @@
 
           <div class="status">
 
-            <p>
-              🕐 Status:
-              <strong>
-                ${order.status}
-              </strong>
-            </p>
+  <p>
+    🕐 Status:
+    <strong>${order.status}</strong>
+  </p>
 
-            <p>
-              💳 Payment:
-              <strong>
-                ${order.payment_status}
-              </strong>
-            </p>
+  <p>
+    💳 Payment:
+    <strong>${order.payment_status}</strong>
+  </p>
 
-          </div>
+  <hr>
 
-        `;
+  <p><strong>Update Order:</strong></p>
 
+  <button onclick="updateOrderStatus('${order.id}', 'processing')">
+    📦 Processing
+  </button>
 
-        container.appendChild(div);
+  <button onclick="updateOrderStatus('${order.id}', 'shipped')">
+    🚚 Shipped
+  </button>
+
+</div>
+
+`;
+
+container.appendChild(div);
 
       });
 
     }
 
+   async function updateOrderStatus(orderId, newStatus) {
 
+  const { error } =
+    await supabaseClient
+      .from("orders")
+      .update({
+        status: newStatus
+      })
+      .eq("id", orderId);
+
+  if (error) {
+
+    alert(
+      "❌ Failed to update order: " +
+      error.message
+    );
+
+    return;
+  }
+
+  alert(
+    "✅ Order status updated to " +
+    newStatus
+  );
+
+  loadSellerOrders();
+
+   }
     function goBack() {
 
       window.location.href =
