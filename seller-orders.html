@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AREWA HUB - Seller Orders</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .order {
+      background: white;
+      padding: 20px;
+      margin: 15px 0;
+      border-radius: 12px;
+    }
+
+    .status {
+      background: #eee;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    button {
+      padding: 12px 18px;
+      margin-top: 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>🏪 AREWA HUB</h1>
+
+  <h2>Seller Orders</h2>
+
+  <p id="status">Loading orders...</p>
+
+  <div id="orders"></div>
+
+  <button onclick="goBack()">
+    ← Back to Seller Dashboard
+  </button>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+
+    const SUPABASE_URL =
+      "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+    const supabaseClient =
+      supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+
+    async function loadSellerOrders() {
+
+      const status =
+        document.getElementById("status");
+
+      const container =
+        document.getElementById("orders");
+
+
+      const {
+        data: { user },
+        error: authError
+      } =
+        await supabaseClient.auth.getUser();
+
+
+      if (authError || !user) {
+
+        status.textContent =
+          "❌ Please login as a seller first.";
+
+        return;
+      }
+
+
+      const {
+        data: profile,
+        error: profileError
+      } =
+        await supabaseClient
+          .from("profiles")
+          .select("role")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+
+      if (
+        profileError ||
+        !profile
+      ) {
+
+        status.textContent =
+          "❌ Seller profile not found.";
+
+        return;
+      }
+
+
+      if (
+        String(profile.role).toLowerCase()
+        !== "seller"
+      ) {
+
+        status.textContent =
+          "❌ Only sellers can view seller orders.";
+
+        return;
+      }
+
+
+      const {
+        data: orders,
+        error
+      } =
+        await supabaseClient
+          .from("orders")
+          .select(`
+            id,
+            buyer_id,
+            product_id,
+            quantity,
+            total_price,
+            delivery_address,
+            status,
+            payment_status,
+            created_at,
+            products (
+              name,
+              description,
+              price,
+              location
+            )
+          `)
+          .eq("seller_id", user.id)
+          .order("created_at", {
+            ascending: false
+          });
+
+
+      if (error) {
+
+        console.log(error);
+
+        status.textContent =
+          "❌ Failed to load orders: " +
+          error.message;
+
+        return;
+      }
+
+
+      if (
+        !orders ||
+        orders.length === 0
+      ) {
+
+        status.textContent =
+          "No orders found.";
+
+        return;
+      }
+
+
+      status.textContent =
+        "Orders loaded successfully.";
+
+
+      container.innerHTML = "";
+
+
+      orders.forEach(function(order) {
+
+        const product =
+          order.products;
+
+
+        const div =
+          document.createElement("div");
+
+        div.className =
+          "order";
+
+
+        const date =
+          new Date(
+            order.created_at
+          ).toLocaleString();
+
+
+        div.innerHTML = `
+
+          <h3>📦 New Order</h3>
+
+          <p>
+            <strong>Product:</strong>
+            ${product
+              ? product.name
+              : "Product unavailable"}
+          </p>
+
+          <p>
+            <strong>Quantity:</strong>
+            ${order.quantity}
+          </p>
+
+          <p>
+            <strong>Total:</strong>
+            ₦${Number(
+              order.total_price
+            ).toLocaleString()}
+          </p>
+
+          <p>
+            <strong>Delivery Address:</strong>
+            ${order.delivery_address}
+          </p>
+
+          <p>
+            <strong>Order Date:</strong>
+            ${date}
+          </p>
+
+          <div class="status">
+
+            <p>
+              🕐 Status:
+              <strong>
+                ${order.status}
+              </strong>
+            </p>
+
+            <p>
+              💳 Payment:
+              <strong>
+                ${order.payment_status}
+              </strong>
+            </p>
+
+          </div>
+
+        `;
+
+
+        container.appendChild(div);
+
+      });
+
+    }
+
+
+    function goBack() {
+
+      window.location.href =
+        "seller-dashboard.html";
+
+    }
+
+
+    loadSellerOrders();
+
+  </script>
+
+</body>
+  </html>
