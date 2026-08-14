@@ -4,36 +4,333 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AREWA HUB - Checkout</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 20px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0 15px;
+      box-sizing: border-box;
+    }
+
+    button {
+      padding: 12px 18px;
+      margin: 5px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 
 <body>
 
-  <h1>💳 AREWA HUB</h1>
+  <h1>🛒 AREWA HUB</h1>
 
   <h2>Checkout</h2>
 
-  <h3>Order Summary</h3>
+  <p id="status">Loading checkout...</p>
 
-  <p>Product: Product Name</p>
-  <p>Quantity: 1</p>
-  <p>Product Price: ₦0</p>
-  <p>Delivery Fee: ₦0</p>
-  <p><strong>Total: ₦0</strong></p>
+  <div id="checkout" style="display:none;">
 
-  <h3>Delivery Information</h3>
+    <div class="card">
 
-  <label>Full Name</label><br>
-  <input type="text" placeholder="Enter full name"><br><br>
+      <h3>Order Summary</h3>
 
-  <label>Phone Number</label><br>
-  <input type="tel" placeholder="Enter phone number"><br><br>
+      <div id="items"></div>
 
-  <label>Delivery Address</label><br>
-  <textarea placeholder="Enter delivery address"></textarea><br><br>
+      <h3>
+        Total:
+        ₦<span id="total">0</span>
+      </h3>
 
-  <h3>Payment</h3>
+    </div>
 
-  <button>Proceed to Payment</button>
+    <div class="card">
+
+      <h3>🚚 Delivery Information</h3>
+
+      <label>Delivery Address</label>
+
+      <textarea
+        id="address"
+        rows="4"
+        placeholder="Enter your delivery address"
+        required
+      ></textarea>
+
+      <button onclick="placeOrder()">
+        ✅ Place Order
+      </button>
+
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+
+    const SUPABASE_URL =
+      "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+    const supabaseClient =
+      supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+    let user = null;
+    let cartData = [];
+
+
+    async function loadCheckout() {
+
+      const status =
+        document.getElementById("status");
+
+      const {
+        data: userData,
+        error: authError
+      } =
+        await supabaseClient.auth.getUser();
+
+      if (authError || !userData.user) {
+
+        status.textContent =
+          "❌ Please login as a buyer first.";
+
+        return;
+      }
+
+      user = userData.user;
+
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient
+          .from("cart")
+          .select(`
+            id,
+            quantity,
+            product_id,
+            products (
+              name,
+              price,
+              stock,
+              seller_id
+            )
+          `)
+          .eq("buyer_id", user.id);
+
+
+      if (error) {
+
+        console.log(error);
+
+        status.textContent =
+          "❌ Failed to load checkout: " +
+          error.message;
+
+        return;
+      }
+
+
+      if (!data || data.length === 0) {
+
+        status.textContent =
+          "❌ Your cart is empty.";
+
+        return;
+      }
+
+
+      cartData = data;
+
+      document.getElementById("checkout").style.display =
+        "block";
+
+      status.style.display =
+        "none";
+
+
+      let total = 0;
+
+      const items =
+        document.getElementById("items");
+
+      items.innerHTML = "";
+
+
+      cartData.forEach(function(item) {
+
+        const product =
+          item.products;
+
+        const itemTotal =
+          Number(product.price) *
+          Number(item.quantity);
+
+        total += itemTotal;
+
+
+        const div =
+          document.createElement("div");
+
+        div.innerHTML = `
+
+          <p>
+            <strong>${product.name}</strong>
+          </p>
+
+          <p>
+            Quantity:
+            ${item.quantity}
+          </p>
+
+          <p>
+            Price:
+            ₦${Number(product.price).toLocaleString()}
+          </p>
+
+          <p>
+            Item Total:
+            ₦${itemTotal.toLocaleString()}
+          </p>
+
+          <hr>
+
+        `;
+
+        items.appendChild(div);
+
+      });
+
+
+      document.getElementById("total").textContent =
+        total.toLocaleString();
+
+    }
+
+
+    async function placeOrder() {
+
+      const address =
+        document.getElementById("address").value.trim();
+
+
+      if (!address) {
+
+        alert(
+          "Please enter your delivery address."
+        );
+
+        return;
+      }
+
+
+      if (!cartData.length) {
+
+        alert(
+          "Your cart is empty."
+        );
+
+        return;
+      }
+
+
+      for (const item of cartData) {
+
+        const product =
+          item.products;
+
+
+        const totalPrice =
+          Number(product.price) *
+          Number(item.quantity);
+
+
+        const {
+          error
+        } =
+          await supabaseClient
+            .from("orders")
+            .insert({
+
+              buyer_id:
+                user.id,
+
+              seller_id:
+                product.seller_id,
+
+              product_id:
+                item.product_id,
+
+              quantity:
+                item.quantity,
+
+              total_price:
+                totalPrice,
+
+              delivery_address:
+                address,
+
+              status:
+                "pending",
+
+              payment_status:
+                "unpaid"
+
+            });
+
+
+        if (error) {
+
+          console.log(error);
+
+          alert(
+            "❌ Failed to place order: " +
+            error.message
+          );
+
+          return;
+        }
+
+      }
+
+
+      alert(
+        "✅ Order placed successfully!"
+      );
+
+
+      window.location.href =
+        "buyer.html";
+
+    }
+
+
+    loadCheckout();
+
+  </script>
 
 </body>
 </html>
