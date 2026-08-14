@@ -103,17 +103,15 @@
     await supabaseClient
       .from("orders")
       .select(`
-        id,
-        quantity,
-        total_price,
-        delivery_address,
-        status,
-        payment_status,
-        created_at,
-        products (
-          name
-        )
-      `)
+  id,
+  quantity,
+  total_price,
+  delivery_address,
+  status,
+  payment_status,
+  created_at,
+  product_id
+`)
       .eq(
         "buyer_id",
         user.id
