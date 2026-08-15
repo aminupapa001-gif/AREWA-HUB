@@ -4,89 +4,379 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>AREWA HUB - Admin</title>
+  <title>AREWA HUB - Admin Dashboard</title>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
+      margin: 0;
       font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #111827;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 18px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    header p {
+      margin: 6px 0 0;
+      color: #d1d5db;
+    }
+
+    .container {
       padding: 20px;
-      background: #f5f5f5;
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    .welcome {
+      background: white;
+      padding: 20px;
+      border-radius: 14px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+    }
+
+    .welcome h2 {
+      margin-top: 0;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .stat {
+      background: white;
+      padding: 18px;
+      border-radius: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+    }
+
+    .stat span {
+      font-size: 28px;
+    }
+
+    .stat h3 {
+      margin: 8px 0 4px;
+      font-size: 15px;
+      color: #6b7280;
+    }
+
+    .stat p {
+      margin: 0;
+      font-size: 25px;
+      font-weight: bold;
+    }
+
+    section {
+      margin-bottom: 25px;
+    }
+
+    section h2 {
+      font-size: 19px;
+      margin-bottom: 12px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
     }
 
     .card {
       background: white;
-      padding: 20px;
-      margin-top: 15px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      padding: 18px;
+      border-radius: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+    }
+
+    .card h3 {
+      margin-top: 0;
+    }
+
+    .card p {
+      color: #6b7280;
+      line-height: 1.5;
     }
 
     button {
-      padding: 12px 16px;
-      margin-top: 10px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 15px;
-    }
-
-    .withdraw-button {
-      background: #111;
-      color: white;
       width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 9px;
+      background: #111827;
+      color: white;
+      font-size: 15px;
+      cursor: pointer;
     }
 
-    #message {
-      font-weight: bold;
-      margin-top: 15px;
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .withdraw {
+      border: 2px solid #111827;
+    }
+
+    .logout {
+      background: #dc2626;
+      margin-top: 10px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 25px;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    @media (min-width: 700px) {
+      .stats {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
     }
   </style>
 </head>
 
 <body>
 
-  <h1>🔐 AREWA HUB</h1>
+  <header>
+    <h1>🔐 AREWA HUB</h1>
+    <p>Admin Control Center</p>
+  </header>
 
-  <h2>Admin Dashboard</h2>
+  <main class="container">
 
-  <p>Admin control center</p>
+    <div class="welcome">
+      <h2>👋 Welcome, Admin</h2>
+      <p>
+        Manage AREWA HUB users, sellers, orders,
+        payments and withdrawals from one place.
+      </p>
+    </div>
 
-  <h3>Platform Management</h3>
+    <!-- STATISTICS -->
 
-  <p>👥 Users</p>
-  <p>🏪 Sellers</p>
-  <p>🛠️ Service Providers</p>
-  <p>🚚 Delivery Agents</p>
+    <div class="stats">
 
-  <h3>Orders & Payments</h3>
+      <div class="stat">
+        <span>👥</span>
+        <h3>Total Users</h3>
+        <p id="usersCount">0</p>
+      </div>
 
-  <p>📦 Orders</p>
-  <p>💰 Payments</p>
-  <p>⚠️ Disputes</p>
+      <div class="stat">
+        <span>🏪</span>
+        <h3>Sellers</h3>
+        <p id="sellersCount">0</p>
+      </div>
 
-  <h3>💸 Withdrawals</h3>
+      <div class="stat">
+        <span>📦</span>
+        <h3>Orders</h3>
+        <p id="ordersCount">0</p>
+      </div>
 
-  <div class="card">
+      <div class="stat">
+        <span>💸</span>
+        <h3>Withdrawals</h3>
+        <p id="withdrawalsCount">0</p>
+      </div>
 
-    <p>
-      Manage seller withdrawal requests.
-    </p>
+    </div>
+
+
+    <!-- PLATFORM MANAGEMENT -->
+
+    <section>
+
+      <h2>🏢 Platform Management</h2>
+
+      <div class="grid">
+
+        <div class="card">
+          <h3>👥 Users</h3>
+          <p>View and manage registered users.</p>
+          <button onclick="showMessage('Users management coming soon.')">
+            Manage Users
+          </button>
+        </div>
+
+        <div class="card">
+          <h3>🏪 Sellers</h3>
+          <p>Manage sellers and seller profiles.</p>
+          <button onclick="showMessage('Seller management coming soon.')">
+            Manage Sellers
+          </button>
+        </div>
+
+        <div class="card">
+          <h3>🛠️ Service Providers</h3>
+          <p>Manage service providers on AREWA HUB.</p>
+          <button onclick="showMessage('Service provider management coming soon.')">
+            Manage Providers
+          </button>
+        </div>
+
+        <div class="card">
+          <h3>🚚 Delivery Agents</h3>
+          <p>Manage delivery agents.</p>
+          <button onclick="showMessage('Delivery management coming soon.')">
+            Manage Delivery
+          </button>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ORDERS AND PAYMENTS -->
+
+    <section>
+
+      <h2>💳 Orders & Payments</h2>
+
+      <div class="grid">
+
+        <div class="card">
+          <h3>📦 Orders</h3>
+          <p>Monitor customer orders and transactions.</p>
+          <button onclick="showMessage('Orders management coming soon.')">
+            View Orders
+          </button>
+        </div>
+
+        <div class="card">
+          <h3>💰 Payments</h3>
+          <p>Monitor payments and platform transactions.</p>
+          <button onclick="showMessage('Payments management coming soon.')">
+            View Payments
+          </button>
+        </div>
+
+        <div class="card">
+          <h3>⚠️ Disputes</h3>
+          <p>Review buyer and seller disputes.</p>
+          <button onclick="showMessage('Dispute management coming soon.')">
+            View Disputes
+          </button>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- WITHDRAWALS -->
+
+    <section>
+
+      <h2>💸 Withdrawals</h2>
+
+      <div class="card withdraw">
+
+        <h3>💸 Seller Withdrawal Requests</h3>
+
+        <p>
+          Review seller withdrawal requests,
+          including pending withdrawal requests.
+        </p>
+
+        <button
+          onclick="window.location.href='admin-withdrawals.html'"
+        >
+          💸 View Withdrawal Requests
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- SECURITY -->
+
+    <section>
+
+      <h2>🔒 Security & Verification</h2>
+
+      <div class="grid">
+
+        <div class="card">
+          <h3>🔒 Account Verification</h3>
+          <p>Review seller and user verification.</p>
+
+          <button onclick="showMessage('Verification management coming soon.')">
+            Verification
+          </button>
+        </div>
+
+        <div class="card">
+          <h3>🚨 Reports</h3>
+          <p>Review reported users, sellers and content.</p>
+
+          <button onclick="showMessage('Reports management coming soon.')">
+            View Reports
+          </button>
+        </div>
+
+        <div class="card">
+          <h3>⚙️ System</h3>
+          <p>Platform settings and administration.</p>
+
+          <button onclick="showMessage('System settings coming soon.')">
+            System Settings
+          </button>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <p
+      id="message"
+      style="
+        text-align:center;
+        font-weight:bold;
+        margin:20px 0;
+      "
+    ></p>
 
     <button
-      class="withdraw-button"
-      onclick="window.location.href='admin-withdrawals.html'"
+      class="logout"
+      onclick="logout()"
     >
-      💸 View Withdrawal Requests
+      🚪 Admin Logout
     </button>
 
-  </div>
+  </main>
 
-  <h3>Security</h3>
 
-  <p>🔒 Account Verification</p>
-  <p>🚨 Reports</p>
+  <footer>
+    © 2026 AREWA HUB — Admin Dashboard
+  </footer>
 
-  <p id="message"></p>
+
+  <!-- SUPABASE -->
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -103,6 +393,81 @@
         SUPABASE_URL,
         SUPABASE_KEY
       );
+
+
+    function showMessage(message) {
+
+      document.getElementById("message").textContent =
+        message;
+
+    }
+
+
+    async function loadDashboardStats() {
+
+      try {
+
+        const users =
+          await supabaseClient
+            .from("profiles")
+            .select("*", {
+              count: "exact",
+              head: true
+            });
+
+        if (!users.error) {
+          document.getElementById("usersCount").textContent =
+            users.count || 0;
+        }
+
+
+        const sellers =
+          await supabaseClient
+            .from("profiles")
+            .select("*", {
+              count: "exact",
+              head: true
+            })
+            .eq("role", "seller");
+
+        if (!sellers.error) {
+          document.getElementById("sellersCount").textContent =
+            sellers.count || 0;
+        }
+
+
+        const withdrawals =
+          await supabaseClient
+            .from("withdrawals")
+            .select("*", {
+              count: "exact",
+              head: true
+            });
+
+        if (!withdrawals.error) {
+          document.getElementById("withdrawalsCount").textContent =
+            withdrawals.count || 0;
+        }
+
+      } catch (error) {
+
+        console.log(error);
+
+      }
+
+    }
+
+
+    async function logout() {
+
+      await supabaseClient.auth.signOut();
+
+      window.location.href = "index.html";
+
+    }
+
+
+    loadDashboardStats();
 
   </script>
 
