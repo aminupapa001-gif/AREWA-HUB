@@ -253,44 +253,50 @@
 
     async function approveWithdrawal(id) {
 
-      const confirmApprove =
-        confirm(
-          "Are you sure you want to approve this withdrawal?"
-        );
+  const confirmApprove =
+    confirm(
+      "Are you sure you want to approve this withdrawal?"
+    );
 
 
-      if (!confirmApprove) {
-        return;
+  if (!confirmApprove) {
+    return;
+  }
+
+
+  document.getElementById("message").textContent =
+    "⏳ Approving withdrawal...";
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "approve_withdrawal",
+      {
+        p_withdrawal_id: id
       }
+    );
 
 
-      const { error } =
-        await supabaseClient
-          .from("withdrawals")
-          .update({
-            status: "approved"
-          })
-          .eq("id", id);
+  if (error) {
+
+    document.getElementById("message").textContent =
+      "❌ Approval failed: " +
+      error.message;
+
+    return;
+  }
 
 
-      if (error) {
-
-        document.getElementById("message").textContent =
-          "❌ " + error.message;
-
-        return;
-      }
+  document.getElementById("message").textContent =
+    "✅ Withdrawal approved successfully.";
 
 
-      document.getElementById("message").textContent =
-        "✅ Withdrawal approved successfully.";
-
-      loadWithdrawals();
+  loadWithdrawals();
 
     }
-
-
-    async function rejectWithdrawal(id) {
 
       const confirmReject =
         confirm(
