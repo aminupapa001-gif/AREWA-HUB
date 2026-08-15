@@ -3,24 +3,240 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>AREWA HUB - Admin Login</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .login-card {
+      max-width: 420px;
+      margin: 50px auto;
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 13px;
+      margin-top: 7px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      background: #111;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #message {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 
 <body>
 
-  <h1>🔐 AREWA HUB</h1>
+  <div class="login-card">
 
-  <h2>Admin Login</h2>
+    <h1>🔐 AREWA HUB</h1>
 
-  <form>
-    <label>Admin Email</label><br>
-    <input type="email" placeholder="Enter admin email"><br><br>
+    <h2>Admin Login</h2>
 
-    <label>Password</label><br>
-    <input type="password" placeholder="Enter admin password"><br><br>
+    <form id="adminLoginForm">
 
-    <button type="submit">Admin Login</button>
-  </form>
+      <label>Admin Email</label>
+
+      <input
+        id="email"
+        type="email"
+        placeholder="Enter admin email"
+        required
+      >
+
+      <label>Password</label>
+
+      <input
+        id="password"
+        type="password"
+        placeholder="Enter admin password"
+        required
+      >
+
+      <button
+        id="loginButton"
+        type="submit"
+      >
+        Admin Login
+      </button>
+
+    </form>
+
+    <p id="message"></p>
+
+  </div>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+
+    const SUPABASE_URL =
+      "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+    const supabaseClient =
+      supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+
+    document
+      .getElementById("adminLoginForm")
+      .addEventListener(
+        "submit",
+        async function(event) {
+
+          event.preventDefault();
+
+
+          const email =
+            document
+              .getElementById("email")
+              .value
+              .trim();
+
+
+          const password =
+            document
+              .getElementById("password")
+              .value;
+
+
+          const message =
+            document
+              .getElementById("message");
+
+
+          const loginButton =
+            document
+              .getElementById("loginButton");
+
+
+          message.textContent =
+            "⏳ Logging in...";
+
+          loginButton.disabled = true;
+
+
+          const {
+            data,
+            error
+          } =
+            await supabaseClient.auth.signInWithPassword({
+              email: email,
+              password: password
+            });
+
+
+          if (error) {
+
+            message.textContent =
+              "❌ Login failed: " +
+              error.message;
+
+            loginButton.disabled = false;
+
+            return;
+          }
+
+
+          const user =
+            data.user;
+
+
+          if (!user) {
+
+            message.textContent =
+              "❌ User not found.";
+
+            loginButton.disabled = false;
+
+            return;
+          }
+
+
+          const {
+            data: profile,
+            error: profileError
+          } =
+            await supabaseClient
+              .from("profiles")
+              .select("role")
+              .eq("user_id", user.id)
+              .maybeSingle();
+
+
+          if (profileError) {
+
+            await supabaseClient.auth.signOut();
+
+            message.textContent =
+              "❌ Profile error: " +
+              profileError.message;
+
+            loginButton.disabled = false;
+
+            return;
+          }
+
+
+          if (
+            !profile ||
+            profile.role !== "admin"
+          ) {
+
+            await supabaseClient.auth.signOut();
+
+            message.textContent =
+              "❌ This account is not an Admin.";
+
+            loginButton.disabled = false;
+
+            return;
+          }
+
+
+          message.textContent =
+            "✅ Admin login successful.";
+
+
+          window.location.href =
+            "admin.html";
+
+        }
+      );
+
+  </script>
 
 </body>
 </html>
