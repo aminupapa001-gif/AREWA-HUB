@@ -246,12 +246,12 @@
             div.innerHTML = `
 
               <strong>
-  ${
-    Number(transaction.amount) < 0
-      ? "−₦" + Math.abs(Number(transaction.amount)).toLocaleString()
-      : "+₦" + Number(transaction.amount).toLocaleString()
-  }
-</strong>
+        ${
+       Number(transaction.amount) < 0
+        ? "−₦" + Math.abs(Number(transaction.amount)).toLocaleString()
+        : "+₦" + Number(transaction.amount).toLocaleString()
+        }
+         </strong>
 
               <p>
                 Type:
