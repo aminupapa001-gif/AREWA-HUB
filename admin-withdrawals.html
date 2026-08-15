@@ -86,9 +86,12 @@
 <body>
 
   <h1>🔐 AREWA HUB</h1>
+
   <h2>💸 Withdrawal Requests</h2>
 
-  <p>Admin can review and manage seller withdrawal requests.</p>
+  <p>
+    Admin can review and manage seller withdrawal requests.
+  </p>
 
   <div id="withdrawals">
     Loading withdrawal requests...
@@ -102,6 +105,7 @@
   >
     ← Back to Admin Dashboard
   </button>
+
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -125,13 +129,23 @@
       const container =
         document.getElementById("withdrawals");
 
-      const { data, error } =
+      container.innerHTML =
+        "⏳ Loading withdrawal requests...";
+
+
+      const {
+        data,
+        error
+      } =
         await supabaseClient
           .from("withdrawals")
           .select("*")
-          .order("created_at", {
-            ascending: false
-          });
+          .order(
+            "created_at",
+            {
+              ascending: false
+            }
+          );
 
 
       if (error) {
@@ -139,7 +153,9 @@
         container.innerHTML =
           "<p>❌ Error loading withdrawals.</p>";
 
-        document.getElementById("message").textContent =
+        document.getElementById(
+          "message"
+        ).textContent =
           error.message;
 
         return;
@@ -158,145 +174,220 @@
       container.innerHTML = "";
 
 
-      data.forEach(function(withdrawal) {
+      data.forEach(
+        function(withdrawal) {
 
-        const card =
-          document.createElement("div");
+          const card =
+            document.createElement("div");
 
-        card.className = "card";
-
-
-        const status =
-          withdrawal.status || "pending";
+          card.className =
+            "card";
 
 
-        let statusClass = "";
-
-        if (status === "approved") {
-          statusClass = "approved";
-        }
-
-        if (status === "rejected") {
-          statusClass = "rejected";
-        }
+          const status =
+            withdrawal.status ||
+            "pending";
 
 
-        card.innerHTML = `
+          let statusClass = "";
 
-          <h3>💸 Withdrawal Request</h3>
 
-          <p>
-            <strong>Amount:</strong>
-          </p>
-
-          <div class="amount">
-            ₦${Number(withdrawal.amount).toLocaleString()}
-          </div>
-
-          <p>
-            <strong>Status:</strong>
-            <span class="status ${statusClass}">
-              ${status}
-            </span>
-          </p>
-
-          <p>
-            <strong>Request ID:</strong><br>
-            ${withdrawal.id || "N/A"}
-          </p>
-
-          <p>
-            <strong>Seller ID:</strong><br>
-            ${withdrawal.seller_id || "N/A"}
-          </p>
-
-          <p>
-            <strong>Date:</strong><br>
-            ${
-              withdrawal.created_at
-              ? new Date(
-                  withdrawal.created_at
-                ).toLocaleString()
-              : "N/A"
-            }
-          </p>
-
-          ${
-            status === "pending"
-            ? `
-              <button
-                class="approve"
-                onclick="approveWithdrawal('${withdrawal.id}')"
-              >
-                ✅ Approve Withdrawal
-              </button>
-
-              <button
-                class="reject"
-                onclick="rejectWithdrawal('${withdrawal.id}')"
-              >
-                ❌ Reject Withdrawal
-              </button>
-            `
-            : ""
+          if (
+            status === "approved"
+          ) {
+            statusClass =
+              "approved";
           }
 
-        `;
+
+          if (
+            status === "rejected"
+          ) {
+            statusClass =
+              "rejected";
+          }
 
 
-        container.appendChild(card);
+          card.innerHTML = `
 
-      });
+            <h3>
+              💸 Withdrawal Request
+            </h3>
+
+            <p>
+              <strong>Amount:</strong>
+            </p>
+
+            <div class="amount">
+              ₦${Number(
+                withdrawal.amount
+              ).toLocaleString()}
+            </div>
+
+            <p>
+              <strong>Status:</strong>
+
+              <span
+                class="status ${statusClass}"
+              >
+                ${status}
+              </span>
+            </p>
+
+            <p>
+              <strong>
+                Request ID:
+              </strong>
+              <br>
+              ${withdrawal.id || "N/A"}
+            </p>
+
+            <p>
+              <strong>
+                Seller ID:
+              </strong>
+              <br>
+              ${withdrawal.seller_id || "N/A"}
+            </p>
+
+            <p>
+              <strong>
+                Bank:
+              </strong>
+              <br>
+              ${withdrawal.bank_name || "N/A"}
+            </p>
+
+            <p>
+              <strong>
+                Account Name:
+              </strong>
+              <br>
+              ${withdrawal.account_name || "N/A"}
+            </p>
+
+            <p>
+              <strong>
+                Account Number:
+              </strong>
+              <br>
+              ${withdrawal.account_number || "N/A"}
+            </p>
+
+            <p>
+              <strong>
+                Date:
+              </strong>
+              <br>
+              ${
+                withdrawal.created_at
+                ? new Date(
+                    withdrawal.created_at
+                  ).toLocaleString()
+                : "N/A"
+              }
+            </p>
+
+            ${
+              status === "pending"
+              ? `
+
+                <button
+                  class="approve"
+                  onclick="
+                    approveWithdrawal(
+                      '${withdrawal.id}'
+                    )
+                  "
+                >
+                  ✅ Approve Withdrawal
+                </button>
+
+                <button
+                  class="reject"
+                  onclick="
+                    rejectWithdrawal(
+                      '${withdrawal.id}'
+                    )
+                  "
+                >
+                  ❌ Reject Withdrawal
+                </button>
+
+              `
+              : ""
+            }
+
+          `;
+
+
+          container.appendChild(card);
+
+        }
+      );
 
     }
 
 
-    async function approveWithdrawal(id) {
+    async function approveWithdrawal(
+      id
+    ) {
 
-  const confirmApprove =
-    confirm(
-      "Are you sure you want to approve this withdrawal?"
-    );
-
-
-  if (!confirmApprove) {
-    return;
-  }
+      const confirmApprove =
+        confirm(
+          "Are you sure you want to approve this withdrawal?"
+        );
 
 
-  document.getElementById("message").textContent =
-    "⏳ Approving withdrawal...";
-
-
-  const {
-    data,
-    error
-  } =
-    await supabaseClient.rpc(
-      "approve_withdrawal",
-      {
-        p_withdrawal_id: id
+      if (!confirmApprove) {
+        return;
       }
-    );
 
 
-  if (error) {
-
-    document.getElementById("message").textContent =
-      "❌ Approval failed: " +
-      error.message;
-
-    return;
-  }
+      document.getElementById(
+        "message"
+      ).textContent =
+        "⏳ Approving withdrawal...";
 
 
-  document.getElementById("message").textContent =
-    "✅ Withdrawal approved successfully.";
+      const {
+        data,
+        error
+      } =
+        await supabaseClient.rpc(
+          "approve_withdrawal",
+          {
+            p_withdrawal_id: id
+          }
+        );
 
 
-  loadWithdrawals();
+      if (error) {
+
+        document.getElementById(
+          "message"
+        ).textContent =
+          "❌ Approval failed: " +
+          error.message;
+
+        return;
+      }
+
+
+      document.getElementById(
+        "message"
+      ).textContent =
+        "✅ Withdrawal approved successfully.";
+
+
+      loadWithdrawals();
 
     }
+
+
+    async function rejectWithdrawal(
+      id
+    ) {
 
       const confirmReject =
         confirm(
@@ -309,26 +400,43 @@
       }
 
 
-      const { error } =
+      document.getElementById(
+        "message"
+      ).textContent =
+        "⏳ Rejecting withdrawal...";
+
+
+      const {
+        error
+      } =
         await supabaseClient
           .from("withdrawals")
           .update({
             status: "rejected"
           })
-          .eq("id", id);
+          .eq(
+            "id",
+            id
+          );
 
 
       if (error) {
 
-        document.getElementById("message").textContent =
-          "❌ " + error.message;
+        document.getElementById(
+          "message"
+        ).textContent =
+          "❌ " +
+          error.message;
 
         return;
       }
 
 
-      document.getElementById("message").textContent =
+      document.getElementById(
+        "message"
+      ).textContent =
         "❌ Withdrawal rejected.";
+
 
       loadWithdrawals();
 
