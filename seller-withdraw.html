@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>AREWA HUB - Withdraw Money</title>
+  <title>AREWA HUB - Withdraw</title>
 
   <style>
     body {
@@ -22,7 +22,6 @@
     }
 
     input,
-    select,
     button {
       width: 100%;
       padding: 14px;
@@ -32,8 +31,7 @@
       font-size: 16px;
     }
 
-    input,
-    select {
+    input {
       border: 1px solid #ccc;
     }
 
@@ -45,7 +43,7 @@
     }
 
     .balance {
-      font-size: 26px;
+      font-size: 28px;
       font-weight: bold;
       margin: 10px 0 20px;
     }
@@ -61,13 +59,11 @@
 
   <h1>🏦 AREWA HUB</h1>
 
-  <h2>Withdraw Money</h2>
+  <h2>💸 Withdraw Money</h2>
 
   <div class="card">
 
-    <p>
-      Available Balance
-    </p>
+    <p>Available Balance</p>
 
     <div class="balance">
       ₦<span id="balance">0</span>
@@ -103,17 +99,8 @@
     <input
       type="text"
       id="accountNumber"
-      placeholder="Enter account number"
+      placeholder="Enter 10 digit account number"
       maxlength="10"
-    >
-
-    <label>Withdrawal PIN</label>
-
-    <input
-      type="password"
-      id="pin"
-      placeholder="Enter withdrawal PIN"
-      maxlength="6"
       inputmode="numeric"
     >
 
@@ -130,7 +117,6 @@
   <button onclick="window.location.href='seller-wallet.html'">
     ← Back to Wallet
   </button>
-
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -153,16 +139,19 @@
     let currentBalance = 0;
 
 
-    async function loadSeller() {
+    async function loadWallet() {
+
+      const message =
+        document.getElementById("message");
 
       const {
         data: { user },
-        error
+        error: authError
       } =
         await supabaseClient.auth.getUser();
 
 
-      if (error || !user) {
+      if (authError || !user) {
 
         window.location.href =
           "seller-login.html";
@@ -187,9 +176,7 @@
 
       if (walletError) {
 
-        document.getElementById(
-          "message"
-        ).textContent =
+        message.textContent =
           "❌ Wallet error: " +
           walletError.message;
 
@@ -197,21 +184,12 @@
       }
 
 
-      if (!wallet) {
-
-        currentBalance = 0;
-
-      } else {
-
-        currentBalance =
-          Number(wallet.balance);
-
-      }
+      currentBalance =
+        wallet ? Number(wallet.balance) : 0;
 
 
-      document.getElementById(
-        "balance"
-      ).textContent =
+      document.getElementById("balance")
+        .textContent =
         currentBalance.toLocaleString();
 
     }
@@ -220,41 +198,28 @@
     async function requestWithdrawal() {
 
       const message =
-        document.getElementById(
-          "message"
-        );
+        document.getElementById("message");
 
 
       const amount =
         Number(
-          document.getElementById(
-            "amount"
-          ).value
+          document.getElementById("amount").value
         );
 
 
       const bankName =
-        document.getElementById(
-          "bankName"
-        ).value.trim();
+        document.getElementById("bankName")
+          .value.trim();
 
 
       const accountName =
-        document.getElementById(
-          "accountName"
-        ).value.trim();
+        document.getElementById("accountName")
+          .value.trim();
 
 
       const accountNumber =
-        document.getElementById(
-          "accountNumber"
-        ).value.trim();
-
-
-      const pin =
-        document.getElementById(
-          "pin"
-        ).value.trim();
+        document.getElementById("accountNumber")
+          .value.trim();
 
 
       if (!amount || amount <= 0) {
@@ -269,7 +234,7 @@
       if (amount > currentBalance) {
 
         message.textContent =
-          "❌ Insufficient wallet balance.";
+          "❌ Insufficient balance.";
 
         return;
       }
@@ -293,11 +258,7 @@
       }
 
 
-      if (
-        !/^\d{10}$/.test(
-          accountNumber
-        )
-      ) {
+      if (!/^\d{10}$/.test(accountNumber)) {
 
         message.textContent =
           "❌ Account number must be 10 digits.";
@@ -306,68 +267,52 @@
       }
 
 
-      if (
-        !/^\d{4,6}$/.test(
-          pin
-        )
-      ) {
-
-        message.textContent =
-          "❌ Enter your withdrawal PIN.";
-
-        return;
-      }
-
-
       message.textContent =
-        "⏳ Sending withdrawal request...";
+        "⏳ Sending request...";
 
 
       const {
-        error: insertError
+        data,
+        error
       } =
         await supabaseClient
           .from("withdrawals")
           .insert({
-            seller_id:
-              currentUser.id,
-
-            amount:
-              amount,
-
-            bank_name:
-              bankName,
-
-            account_name:
-              accountName,
-
-            account_number:
-              accountNumber,
-
-            status:
-              "pending"
-          });
+            seller_id: currentUser.id,
+            amount: amount,
+            bank_name: bankName,
+            account_name: accountName,
+            account_number: accountNumber,
+            status: "pending"
+          })
+          .select()
+          .single();
 
 
-      if (insertError) {
+      if (error) {
 
         message.textContent =
-          "❌ Withdrawal request failed: " +
-          insertError.message;
+          "❌ Request failed: " +
+          error.message;
 
         return;
       }
 
 
       message.textContent =
-        "✅ Withdrawal request submitted. Waiting for approval.";
+        "✅ Withdrawal request submitted successfully.";
+
+      document.getElementById("amount").value = "";
+      document.getElementById("bankName").value = "";
+      document.getElementById("accountName").value = "";
+      document.getElementById("accountNumber").value = "";
 
     }
 
 
-    loadSeller();
+    loadWallet();
 
   </script>
 
 </body>
-  </html>
+</html>
