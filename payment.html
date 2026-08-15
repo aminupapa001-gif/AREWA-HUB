@@ -96,8 +96,7 @@
 
       const orderId =
         params.get("order_id");
-      
-      alert("ORDER ID: " + orderId);
+
 
       if (!orderId) {
 
@@ -222,65 +221,70 @@
 
     async function payNow() {
 
-  if (!currentPayment) {
-    return;
-  }
+      if (!currentPayment) {
+        return;
+      }
 
 
-  const {
-    error: paymentError
-  } =
-    await supabaseClient
-      .from("payments")
-      .update({
-        status: "paid"
-      })
-      .eq(
-        "id",
-        currentPayment.id
+      const {
+        error: paymentError
+      } =
+        await supabaseClient
+          .from("payments")
+          .update({
+            status: "paid"
+          })
+          .eq(
+            "id",
+            currentPayment.id
+          );
+
+
+      if (paymentError) {
+
+        alert(
+          "❌ Payment failed: " +
+          paymentError.message
+        );
+
+        return;
+      }
+
+
+      const {
+        error: orderError
+      } =
+        await supabaseClient.rpc(
+          "mark_order_paid",
+          {
+            p_order_id:
+              currentPayment.order_id
+          }
+        );
+
+
+      if (orderError) {
+
+        alert(
+          "❌ Payment succeeded, but order payment status failed: " +
+          orderError.message
+        );
+
+        return;
+      }
+
+
+      alert(
+        "✅ Test payment successful!"
       );
 
 
-  if (paymentError) {
+      loadPayment();
 
-    alert(
-      "❌ Payment failed: " +
-      paymentError.message
-    );
-
-    return;
-  }
-
-
-  const {
-  error: orderError
-} =
-  await supabaseClient.rpc(
-    "mark_order_paid",
-    {
-      p_order_id:
-        currentPayment.order_id
     }
-  );
 
 
-  if (orderError) {
-
-    alert(
-      "❌ Payment succeeded, but order payment status failed: " +
-      orderError.message
-    );
-
-    return;
-  }
-
-
-  alert(
-    "✅ Test payment successful!"
-  );
-
-
-  loadPayment();
+    loadPayment();
 
   </script>
 
