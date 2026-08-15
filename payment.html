@@ -221,50 +221,67 @@
 
     async function payNow() {
 
-      if (!currentPayment) {
-        return;
-      }
+  if (!currentPayment) {
+    return;
+  }
 
 
-      const {
-        error
-      } =
-        await supabaseClient
-          .from("payments")
-          .update({
-
-            status:
-              "paid"
-
-          })
-          .eq(
-            "id",
-            currentPayment.id
-          );
-
-
-      if (error) {
-
-        alert(
-          "❌ Payment failed: " +
-          error.message
-        );
-
-        return;
-      }
-
-
-      alert(
-        "✅ Test payment successful!"
+  const {
+    error: paymentError
+  } =
+    await supabaseClient
+      .from("payments")
+      .update({
+        status: "paid"
+      })
+      .eq(
+        "id",
+        currentPayment.id
       );
 
 
-      loadPayment();
+  if (paymentError) {
 
-    }
+    alert(
+      "❌ Payment failed: " +
+      paymentError.message
+    );
+
+    return;
+  }
 
 
-    loadPayment();
+  const {
+    error: orderError
+  } =
+    await supabaseClient
+      .from("orders")
+      .update({
+        payment_status: "paid"
+      })
+      .eq(
+        "id",
+        currentPayment.order_id
+      );
+
+
+  if (orderError) {
+
+    alert(
+      "❌ Payment succeeded, but order payment status failed: " +
+      orderError.message
+    );
+
+    return;
+  }
+
+
+  alert(
+    "✅ Test payment successful!"
+  );
+
+
+  loadPayment();
 
   </script>
 
