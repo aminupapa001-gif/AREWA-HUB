@@ -28,16 +28,26 @@
     .amount {
       font-size: 24px;
       font-weight: bold;
-      color: #111;
+      margin: 8px 0;
     }
 
     .status {
       display: inline-block;
       padding: 6px 10px;
       border-radius: 6px;
+      font-weight: bold;
       background: #fff3cd;
       color: #856404;
-      font-weight: bold;
+    }
+
+    .approved {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .rejected {
+      background: #fee2e2;
+      color: #991b1b;
     }
 
     button {
@@ -47,11 +57,23 @@
       border-radius: 8px;
       cursor: pointer;
       font-size: 15px;
+      width: 100%;
+    }
+
+    .approve {
+      background: #16a34a;
+      color: white;
+    }
+
+    .reject {
+      background: #dc2626;
+      color: white;
     }
 
     .back-button {
       background: #111;
       color: white;
+      margin-top: 20px;
     }
 
     #message {
@@ -66,7 +88,7 @@
   <h1>🔐 AREWA HUB</h1>
   <h2>💸 Withdrawal Requests</h2>
 
-  <p>Admin can view seller withdrawal requests here.</p>
+  <p>Admin can review and manage seller withdrawal requests.</p>
 
   <div id="withdrawals">
     Loading withdrawal requests...
@@ -84,6 +106,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
+
     const SUPABASE_URL =
       "https://ffjofoeiwaiyxecbeuwt.supabase.co";
 
@@ -95,6 +118,7 @@
         SUPABASE_URL,
         SUPABASE_KEY
       );
+
 
     async function loadWithdrawals() {
 
@@ -109,6 +133,7 @@
             ascending: false
           });
 
+
       if (error) {
 
         container.innerHTML =
@@ -120,6 +145,7 @@
         return;
       }
 
+
       if (!data || data.length === 0) {
 
         container.innerHTML =
@@ -128,7 +154,9 @@
         return;
       }
 
+
       container.innerHTML = "";
+
 
       data.forEach(function(withdrawal) {
 
@@ -137,7 +165,24 @@
 
         card.className = "card";
 
+
+        const status =
+          withdrawal.status || "pending";
+
+
+        let statusClass = "";
+
+        if (status === "approved") {
+          statusClass = "approved";
+        }
+
+        if (status === "rejected") {
+          statusClass = "rejected";
+        }
+
+
         card.innerHTML = `
+
           <h3>💸 Withdrawal Request</h3>
 
           <p>
@@ -150,8 +195,8 @@
 
           <p>
             <strong>Status:</strong>
-            <span class="status">
-              ${withdrawal.status || "pending"}
+            <span class="status ${statusClass}">
+              ${status}
             </span>
           </p>
 
@@ -167,18 +212,125 @@
 
           <p>
             <strong>Date:</strong><br>
-            ${withdrawal.created_at
-              ? new Date(withdrawal.created_at).toLocaleString()
-              : "N/A"}
+            ${
+              withdrawal.created_at
+              ? new Date(
+                  withdrawal.created_at
+                ).toLocaleString()
+              : "N/A"
+            }
           </p>
+
+          ${
+            status === "pending"
+            ? `
+              <button
+                class="approve"
+                onclick="approveWithdrawal('${withdrawal.id}')"
+              >
+                ✅ Approve Withdrawal
+              </button>
+
+              <button
+                class="reject"
+                onclick="rejectWithdrawal('${withdrawal.id}')"
+              >
+                ❌ Reject Withdrawal
+              </button>
+            `
+            : ""
+          }
+
         `;
+
 
         container.appendChild(card);
 
       });
+
     }
 
+
+    async function approveWithdrawal(id) {
+
+      const confirmApprove =
+        confirm(
+          "Are you sure you want to approve this withdrawal?"
+        );
+
+
+      if (!confirmApprove) {
+        return;
+      }
+
+
+      const { error } =
+        await supabaseClient
+          .from("withdrawals")
+          .update({
+            status: "approved"
+          })
+          .eq("id", id);
+
+
+      if (error) {
+
+        document.getElementById("message").textContent =
+          "❌ " + error.message;
+
+        return;
+      }
+
+
+      document.getElementById("message").textContent =
+        "✅ Withdrawal approved successfully.";
+
+      loadWithdrawals();
+
+    }
+
+
+    async function rejectWithdrawal(id) {
+
+      const confirmReject =
+        confirm(
+          "Are you sure you want to reject this withdrawal?"
+        );
+
+
+      if (!confirmReject) {
+        return;
+      }
+
+
+      const { error } =
+        await supabaseClient
+          .from("withdrawals")
+          .update({
+            status: "rejected"
+          })
+          .eq("id", id);
+
+
+      if (error) {
+
+        document.getElementById("message").textContent =
+          "❌ " + error.message;
+
+        return;
+      }
+
+
+      document.getElementById("message").textContent =
+        "❌ Withdrawal rejected.";
+
+      loadWithdrawals();
+
+    }
+
+
     loadWithdrawals();
+
   </script>
 
 </body>
