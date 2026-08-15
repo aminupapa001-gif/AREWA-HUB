@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AREWA HUB - Seller Wallet</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      color: #111;
+    }
+
+    .wallet-card {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      margin-top: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .balance {
+      font-size: 32px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .transaction {
+      background: white;
+      padding: 18px;
+      margin-top: 15px;
+      border-radius: 12px;
+      border-left: 5px solid #16a34a;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>💰 AREWA HUB</h1>
+
+  <h2>Seller Wallet</h2>
+
+  <p id="status">
+    Loading wallet...
+  </p>
+
+  <div class="wallet-card">
+
+    <div>
+      Current Balance
+    </div>
+
+    <div class="balance">
+      ₦<span id="balance">0</span>
+    </div>
+
+  </div>
+
+  <h2>🧾 Transactions</h2>
+
+  <div id="transactions"></div>
+
+  <button onclick="window.location.href='seller-dashboard.html'">
+    ← Back to Seller Dashboard
+  </button>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+
+    const SUPABASE_URL =
+      "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+    const supabaseClient =
+      supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+
+    async function loadWallet() {
+
+      const status =
+        document.getElementById("status");
+
+      const balance =
+        document.getElementById("balance");
+
+      const transactions =
+        document.getElementById("transactions");
+
+
+      status.textContent =
+        "Loading wallet...";
+
+
+      const {
+        data: { user },
+        error: authError
+      } =
+        await supabaseClient.auth.getUser();
+
+
+      if (
+        authError ||
+        !user
+      ) {
+
+        status.textContent =
+          "❌ Please login as seller first.";
+
+        return;
+      }
+
+
+      const {
+        data: wallet,
+        error: walletError
+      } =
+        await supabaseClient
+          .from("wallets")
+          .select(
+            "id, balance"
+          )
+          .eq(
+            "user_id",
+            user.id
+          )
+          .maybeSingle();
+
+
+      if (walletError) {
+
+        status.textContent =
+          "❌ Wallet error: " +
+          walletError.message;
+
+        return;
+      }
+
+
+      if (!wallet) {
+
+        balance.textContent =
+          "0";
+
+        status.textContent =
+          "Wallet balance loaded.";
+
+        transactions.innerHTML =
+          "<p>No transactions yet.</p>";
+
+        return;
+      }
+
+
+      balance.textContent =
+        Number(
+          wallet.balance
+        ).toLocaleString();
+
+
+      const {
+        data: walletTransactions,
+        error: transactionError
+      } =
+        await supabaseClient
+          .from("wallet_transactions")
+          .select(`
+            id,
+            amount,
+            type,
+            order_id,
+            created_at
+          `)
+          .eq(
+            "wallet_id",
+            wallet.id
+          )
+          .order(
+            "created_at",
+            {
+              ascending: false
+            }
+          );
+
+
+      if (transactionError) {
+
+        status.textContent =
+          "❌ Transaction error: " +
+          transactionError.message;
+
+        return;
+      }
+
+
+      transactions.innerHTML = "";
+
+
+      if (
+        !walletTransactions ||
+        !walletTransactions.length
+      ) {
+
+        transactions.innerHTML =
+          "<p>No transactions yet.</p>";
+
+      } else {
+
+        walletTransactions.forEach(
+          (transaction) => {
+
+            const div =
+              document.createElement(
+                "div"
+              );
+
+            div.className =
+              "transaction";
+
+
+            div.innerHTML = `
+
+              <strong>
+                +₦${Number(
+                  transaction.amount
+                ).toLocaleString()}
+              </strong>
+
+              <p>
+                Type:
+                ${transaction.type}
+              </p>
+
+              <p>
+                Order:
+                ${transaction.order_id}
+              </p>
+
+              <p>
+                Date:
+                ${new Date(
+                  transaction.created_at
+                ).toLocaleString()}
+              </p>
+
+            `;
+
+
+            transactions.appendChild(
+              div
+            );
+
+          }
+        );
+
+      }
+
+
+      status.textContent =
+        "Wallet loaded successfully.";
+
+    }
+
+
+    loadWallet();
+
+  </script>
+
+</body>
+</html>
