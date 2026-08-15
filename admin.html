@@ -3,7 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>AREWA HUB - Admin</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      margin-top: 15px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    button {
+      padding: 12px 16px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .withdraw-button {
+      background: #111;
+      color: white;
+      width: 100%;
+    }
+
+    #message {
+      font-weight: bold;
+      margin-top: 15px;
+    }
+  </style>
 </head>
 
 <body>
@@ -27,10 +64,47 @@
   <p>💰 Payments</p>
   <p>⚠️ Disputes</p>
 
+  <h3>💸 Withdrawals</h3>
+
+  <div class="card">
+
+    <p>
+      Manage seller withdrawal requests.
+    </p>
+
+    <button
+      class="withdraw-button"
+      onclick="window.location.href='admin-withdrawals.html'"
+    >
+      💸 View Withdrawal Requests
+    </button>
+
+  </div>
+
   <h3>Security</h3>
 
   <p>🔒 Account Verification</p>
   <p>🚨 Reports</p>
+
+  <p id="message"></p>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+
+    const SUPABASE_URL =
+      "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+    const supabaseClient =
+      supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+  </script>
 
 </body>
 </html>
