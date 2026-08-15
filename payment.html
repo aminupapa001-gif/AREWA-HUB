@@ -252,17 +252,15 @@
 
 
   const {
-    error: orderError
-  } =
-    await supabaseClient
-      .from("orders")
-      .update({
-        payment_status: "paid"
-      })
-      .eq(
-        "id",
+  error: orderError
+} =
+  await supabaseClient.rpc(
+    "mark_order_paid",
+    {
+      p_order_id:
         currentPayment.order_id
-      );
+    }
+  );
 
 
   if (orderError) {
