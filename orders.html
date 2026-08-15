@@ -325,32 +325,6 @@ function goBack() {
 
 
 loadOrders();
-async function payForOrder(orderId) {
-
-  const confirmPayment =
-    confirm(
-      "Proceed with test payment for this order?"
-    );
-
-  if (!confirmPayment) {
-    return;
-  }
-
-  window.location.href =
-    "payment.html?order_id=" +
-    orderId;
-
-    }
-    }
-    function goBack() {
-
-      window.location.href =
-        "buyer.html";
-
-    }
-
-
-    loadOrders();
 
   </script>
 
