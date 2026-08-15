@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>AREWA HUB - Withdraw Money</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      margin-top: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    input,
+    select,
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 10px;
+      box-sizing: border-box;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    input,
+    select {
+      border: 1px solid #ccc;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      background: #111;
+      color: white;
+    }
+
+    .balance {
+      font-size: 26px;
+      font-weight: bold;
+      margin: 10px 0 20px;
+    }
+
+    #message {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>🏦 AREWA HUB</h1>
+
+  <h2>Withdraw Money</h2>
+
+  <div class="card">
+
+    <p>
+      Available Balance
+    </p>
+
+    <div class="balance">
+      ₦<span id="balance">0</span>
+    </div>
+
+    <label>Amount</label>
+
+    <input
+      type="number"
+      id="amount"
+      placeholder="Enter amount"
+      min="1"
+    >
+
+    <label>Bank Name</label>
+
+    <input
+      type="text"
+      id="bankName"
+      placeholder="Enter bank name"
+    >
+
+    <label>Account Name</label>
+
+    <input
+      type="text"
+      id="accountName"
+      placeholder="Enter account name"
+    >
+
+    <label>Account Number</label>
+
+    <input
+      type="text"
+      id="accountNumber"
+      placeholder="Enter account number"
+      maxlength="10"
+    >
+
+    <label>Withdrawal PIN</label>
+
+    <input
+      type="password"
+      id="pin"
+      placeholder="Enter withdrawal PIN"
+      maxlength="6"
+      inputmode="numeric"
+    >
+
+    <button onclick="requestWithdrawal()">
+      💸 Request Withdrawal
+    </button>
+
+    <p id="message"></p>
+
+  </div>
+
+  <br>
+
+  <button onclick="window.location.href='seller-wallet.html'">
+    ← Back to Wallet
+  </button>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+
+    const SUPABASE_URL =
+      "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+    const supabaseClient =
+      supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+
+    let currentUser = null;
+    let currentBalance = 0;
+
+
+    async function loadSeller() {
+
+      const {
+        data: { user },
+        error
+      } =
+        await supabaseClient.auth.getUser();
+
+
+      if (error || !user) {
+
+        window.location.href =
+          "seller-login.html";
+
+        return;
+      }
+
+
+      currentUser = user;
+
+
+      const {
+        data: wallet,
+        error: walletError
+      } =
+        await supabaseClient
+          .from("wallets")
+          .select("balance")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+
+      if (walletError) {
+
+        document.getElementById(
+          "message"
+        ).textContent =
+          "❌ Wallet error: " +
+          walletError.message;
+
+        return;
+      }
+
+
+      if (!wallet) {
+
+        currentBalance = 0;
+
+      } else {
+
+        currentBalance =
+          Number(wallet.balance);
+
+      }
+
+
+      document.getElementById(
+        "balance"
+      ).textContent =
+        currentBalance.toLocaleString();
+
+    }
+
+
+    async function requestWithdrawal() {
+
+      const message =
+        document.getElementById(
+          "message"
+        );
+
+
+      const amount =
+        Number(
+          document.getElementById(
+            "amount"
+          ).value
+        );
+
+
+      const bankName =
+        document.getElementById(
+          "bankName"
+        ).value.trim();
+
+
+      const accountName =
+        document.getElementById(
+          "accountName"
+        ).value.trim();
+
+
+      const accountNumber =
+        document.getElementById(
+          "accountNumber"
+        ).value.trim();
+
+
+      const pin =
+        document.getElementById(
+          "pin"
+        ).value.trim();
+
+
+      if (!amount || amount <= 0) {
+
+        message.textContent =
+          "❌ Enter a valid amount.";
+
+        return;
+      }
+
+
+      if (amount > currentBalance) {
+
+        message.textContent =
+          "❌ Insufficient wallet balance.";
+
+        return;
+      }
+
+
+      if (!bankName) {
+
+        message.textContent =
+          "❌ Enter bank name.";
+
+        return;
+      }
+
+
+      if (!accountName) {
+
+        message.textContent =
+          "❌ Enter account name.";
+
+        return;
+      }
+
+
+      if (
+        !/^\d{10}$/.test(
+          accountNumber
+        )
+      ) {
+
+        message.textContent =
+          "❌ Account number must be 10 digits.";
+
+        return;
+      }
+
+
+      if (
+        !/^\d{4,6}$/.test(
+          pin
+        )
+      ) {
+
+        message.textContent =
+          "❌ Enter your withdrawal PIN.";
+
+        return;
+      }
+
+
+      message.textContent =
+        "⏳ Sending withdrawal request...";
+
+
+      const {
+        error: insertError
+      } =
+        await supabaseClient
+          .from("withdrawals")
+          .insert({
+            seller_id:
+              currentUser.id,
+
+            amount:
+              amount,
+
+            bank_name:
+              bankName,
+
+            account_name:
+              accountName,
+
+            account_number:
+              accountNumber,
+
+            status:
+              "pending"
+          });
+
+
+      if (insertError) {
+
+        message.textContent =
+          "❌ Withdrawal request failed: " +
+          insertError.message;
+
+        return;
+      }
+
+
+      message.textContent =
+        "✅ Withdrawal request submitted. Waiting for approval.";
+
+    }
+
+
+    loadSeller();
+
+  </script>
+
+</body>
+  </html>
