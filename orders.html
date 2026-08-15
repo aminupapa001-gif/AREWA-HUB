@@ -85,7 +85,15 @@
     error: authError
   } =
     await supabaseClient.auth.getUser();
+console.log("AUTH RESULT:", user, authError);
 
+if (authError) {
+  alert(
+    "AUTH ERROR: " +
+    authError.message
+  );
+  return;
+}
 
   if (authError || !user) {
 
