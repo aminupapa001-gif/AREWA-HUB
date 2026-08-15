@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>AREWA HUB - Withdrawals</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      margin-bottom: 5px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      margin-top: 15px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .amount {
+      font-size: 24px;
+      font-weight: bold;
+      color: #111;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: #fff3cd;
+      color: #856404;
+      font-weight: bold;
+    }
+
+    button {
+      padding: 12px 16px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .back-button {
+      background: #111;
+      color: white;
+    }
+
+    #message {
+      font-weight: bold;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>🔐 AREWA HUB</h1>
+  <h2>💸 Withdrawal Requests</h2>
+
+  <p>Admin can view seller withdrawal requests here.</p>
+
+  <div id="withdrawals">
+    Loading withdrawal requests...
+  </div>
+
+  <p id="message"></p>
+
+  <button
+    class="back-button"
+    onclick="window.location.href='admin.html'"
+  >
+    ← Back to Admin Dashboard
+  </button>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    const SUPABASE_URL =
+      "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+    const supabaseClient =
+      supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+    async function loadWithdrawals() {
+
+      const container =
+        document.getElementById("withdrawals");
+
+      const { data, error } =
+        await supabaseClient
+          .from("withdrawals")
+          .select("*")
+          .order("created_at", {
+            ascending: false
+          });
+
+      if (error) {
+
+        container.innerHTML =
+          "<p>❌ Error loading withdrawals.</p>";
+
+        document.getElementById("message").textContent =
+          error.message;
+
+        return;
+      }
+
+      if (!data || data.length === 0) {
+
+        container.innerHTML =
+          "<p>There are no withdrawal requests yet.</p>";
+
+        return;
+      }
+
+      container.innerHTML = "";
+
+      data.forEach(function(withdrawal) {
+
+        const card =
+          document.createElement("div");
+
+        card.className = "card";
+
+        card.innerHTML = `
+          <h3>💸 Withdrawal Request</h3>
+
+          <p>
+            <strong>Amount:</strong>
+          </p>
+
+          <div class="amount">
+            ₦${Number(withdrawal.amount).toLocaleString()}
+          </div>
+
+          <p>
+            <strong>Status:</strong>
+            <span class="status">
+              ${withdrawal.status || "pending"}
+            </span>
+          </p>
+
+          <p>
+            <strong>Request ID:</strong><br>
+            ${withdrawal.id || "N/A"}
+          </p>
+
+          <p>
+            <strong>Seller ID:</strong><br>
+            ${withdrawal.seller_id || "N/A"}
+          </p>
+
+          <p>
+            <strong>Date:</strong><br>
+            ${withdrawal.created_at
+              ? new Date(withdrawal.created_at).toLocaleString()
+              : "N/A"}
+          </p>
+        `;
+
+        container.appendChild(card);
+
+      });
+    }
+
+    loadWithdrawals();
+  </script>
+
+</body>
+</html>
