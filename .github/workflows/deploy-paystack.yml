@@ -7,6 +7,10 @@ on:
     paths:
       - "supabase/functions/paystack-transfer/**"
 
+  workflow_dispatch:
+    paths:
+      - "supabase/functions/paystack-transfer/**"
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
