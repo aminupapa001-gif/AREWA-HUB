@@ -29,9 +29,24 @@
     button {
       padding: 12px 18px;
       margin-top: 15px;
+      margin-right: 8px;
       border: none;
       border-radius: 8px;
       cursor: pointer;
+    }
+
+    .chat-button {
+      background: #075e54;
+      color: white;
+      font-weight: bold;
+    }
+
+    .processing-button {
+      background: #ddd;
+    }
+
+    .shipped-button {
+      background: #ddd;
     }
   </style>
 </head>
@@ -67,6 +82,10 @@
         SUPABASE_KEY
       );
 
+
+    // ==========================================
+    // LOAD SELLER ORDERS
+    // ==========================================
 
     async function loadSellerOrders() {
 
@@ -232,7 +251,7 @@
 
           <p>
             <strong>Delivery Address:</strong>
-            ${order.delivery_address}
+            ${order.delivery_address || "Not provided"}
           </p>
 
           <p>
@@ -242,66 +261,211 @@
 
           <div class="status">
 
-  <p>
-    🕐 Status:
-    <strong>${order.status}</strong>
-  </p>
+            <p>
+              🕐 Status:
+              <strong>${order.status}</strong>
+            </p>
 
-  <p>
-    💳 Payment:
-    <strong>${order.payment_status}</strong>
-  </p>
+            <p>
+              💳 Payment:
+              <strong>${order.payment_status}</strong>
+            </p>
 
-  <hr>
+            <hr>
 
-  <p><strong>Update Order:</strong></p>
+            <p><strong>Update Order:</strong></p>
 
-  <button onclick="updateOrderStatus('${order.id}', 'processing')">
-    📦 Processing
-  </button>
+            <button
+              class="processing-button"
+              onclick="updateOrderStatus('${order.id}', 'processing')">
+              📦 Processing
+            </button>
 
-  <button onclick="updateOrderStatus('${order.id}', 'shipped')">
-    🚚 Shipped
-  </button>
+            <button
+              class="shipped-button"
+              onclick="updateOrderStatus('${order.id}', 'shipped')">
+              🚚 Shipped
+            </button>
 
-</div>
+            <br>
 
-`;
+            <button
+              class="chat-button"
+              onclick="openBuyerChat('${order.buyer_id}')">
+              💬 Chat Buyer
+            </button>
 
-container.appendChild(div);
+          </div>
+
+        `;
+
+        container.appendChild(div);
 
       });
 
     }
 
-   async function updateOrderStatus(orderId, newStatus) {
 
-  const { error } =
-    await supabaseClient
-      .from("orders")
-      .update({
-        status: newStatus
-      })
-      .eq("id", orderId);
+    // ==========================================
+    // OPEN CHAT WITH BUYER
+    // ==========================================
 
-  if (error) {
+    async function openBuyerChat(buyerId) {
 
-    alert(
-      "❌ Failed to update order: " +
-      error.message
-    );
+      if (!buyerId) {
 
-    return;
-  }
+        alert(
+          "❌ Buyer information not found."
+        );
 
-  alert(
-    "✅ Order status updated to " +
-    newStatus
-  );
+        return;
+      }
 
-  loadSellerOrders();
 
-   }
+      const {
+        data: { user },
+        error: authError
+      } =
+        await supabaseClient.auth.getUser();
+
+
+      if (authError || !user) {
+
+        alert(
+          "❌ Please login first."
+        );
+
+        return;
+      }
+
+
+      // Check if conversation already exists
+
+      const {
+        data: existingConversation,
+        error: findError
+      } =
+        await supabaseClient
+          .from("conversations")
+          .select("id")
+          .eq("buyer_id", buyerId)
+          .eq("seller_id", user.id)
+          .maybeSingle();
+
+
+      if (findError) {
+
+        console.error(findError);
+
+        alert(
+          "❌ Could not find conversation: " +
+          findError.message
+        );
+
+        return;
+      }
+
+
+      let conversationId;
+
+
+      if (existingConversation) {
+
+        conversationId =
+          existingConversation.id;
+
+      } else {
+
+        // Create new conversation
+
+        const {
+          data: newConversation,
+          error: createError
+        } =
+          await supabaseClient
+            .from("conversations")
+            .insert({
+              buyer_id: buyerId,
+              seller_id: user.id
+            })
+            .select("id")
+            .single();
+
+
+        if (createError) {
+
+          console.error(createError);
+
+          alert(
+            "❌ Could not create conversation: " +
+            createError.message
+          );
+
+          return;
+        }
+
+
+        conversationId =
+          newConversation.id;
+
+      }
+
+
+      // Open chat page
+
+      window.location.href =
+        "chat.html?conversation_id=" +
+        encodeURIComponent(
+          conversationId
+        );
+
+    }
+
+
+    // ==========================================
+    // UPDATE ORDER STATUS
+    // ==========================================
+
+    async function updateOrderStatus(
+      orderId,
+      newStatus
+    ) {
+
+      const { error } =
+        await supabaseClient
+          .from("orders")
+          .update({
+            status: newStatus
+          })
+          .eq("id", orderId);
+
+
+      if (error) {
+
+        alert(
+          "❌ Failed to update order: " +
+          error.message
+        );
+
+        return;
+      }
+
+
+      alert(
+        "✅ Order status updated to " +
+        newStatus
+      );
+
+
+      loadSellerOrders();
+
+    }
+
+
+    // ==========================================
+    // BACK
+    // ==========================================
+
     function goBack() {
 
       window.location.href =
@@ -310,9 +474,13 @@ container.appendChild(div);
     }
 
 
+    // ==========================================
+    // START
+    // ==========================================
+
     loadSellerOrders();
 
   </script>
 
 </body>
-  </html>
+</html>
