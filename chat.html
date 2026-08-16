@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AREWA HUB - Chat</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
+    }
+
+    .chat-container {
+      max-width: 700px;
+      height: 100vh;
+      margin: auto;
+      background: white;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-header {
+      padding: 16px;
+      background: #075e54;
+      color: white;
+    }
+
+    .chat-header h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .chat-header p {
+      margin: 5px 0 0;
+      font-size: 13px;
+      opacity: 0.85;
+    }
+
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 10px 13px;
+      border-radius: 14px;
+      word-wrap: break-word;
+    }
+
+    .mine {
+      align-self: flex-end;
+      background: #dcf8c6;
+    }
+
+    .theirs {
+      align-self: flex-start;
+      background: #eeeeee;
+    }
+
+    .message-time {
+      display: block;
+      font-size: 10px;
+      margin-top: 4px;
+      color: #777;
+    }
+
+    .chat-input {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #ddd;
+      gap: 8px;
+    }
+
+    #messageInput {
+      flex: 1;
+      border: 1px solid #ccc;
+      border-radius: 22px;
+      padding: 12px 15px;
+      outline: none;
+    }
+
+    #sendButton {
+      border: none;
+      border-radius: 22px;
+      padding: 0 20px;
+      background: #075e54;
+      color: white;
+      font-weight: bold;
+    }
+
+    #sendButton:disabled {
+      opacity: 0.5;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="chat-container">
+
+  <div class="chat-header">
+    <h2 id="chatTitle">AREWA HUB Chat</h2>
+    <p id="chatStatus">Connecting...</p>
+  </div>
+
+  <div id="messages"></div>
+
+  <div class="chat-input">
+    <input
+      id="messageInput"
+      type="text"
+      placeholder="Write a message..."
+      autocomplete="off"
+    >
+
+    <button id="sendButton" disabled>
+      Send
+    </button>
+  </div>
+
+</div>
+
+<script type="module">
+
+  import { createClient } from
+    "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+
+  // ==========================================
+  // SUPABASE CONFIG
+  // ==========================================
+
+  const SUPABASE_URL = "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
+const SUPABASE_ANON_KEY = "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF
+
+
+  const supabase = createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+
+  // ==========================================
+  // ELEMENTS
+  // ==========================================
+
+  const messagesBox =
+    document.getElementById("messages");
+
+  const messageInput =
+    document.getElementById("messageInput");
+
+  const sendButton =
+    document.getElementById("sendButton");
+
+  const chatStatus =
+    document.getElementById("chatStatus");
+
+
+  // ==========================================
+  // URL PARAMETERS
+  // ==========================================
+
+  const params =
+    new URLSearchParams(window.location.search);
+
+  const conversationId =
+    params.get("conversation_id");
+
+
+  // ==========================================
+  // CURRENT USER
+  // ==========================================
+
+  let currentUser = null;
+
+
+  async function getCurrentUser() {
+
+    const {
+      data,
+      error
+    } = await supabase.auth.getUser();
+
+
+    if (error) {
+
+      console.error(error);
+
+      chatStatus.textContent =
+        "Authentication error";
+
+      return;
+
+    }
+
+
+    currentUser = data.user;
+
+
+    if (!currentUser) {
+
+      chatStatus.textContent =
+        "Please login first";
+
+      sendButton.disabled = true;
+
+      return;
+
+    }
+
+
+    chatStatus.textContent =
+      "Online";
+
+    sendButton.disabled = false;
+
+
+    await loadMessages();
+
+    subscribeToMessages();
+
+  }
+
+
+  // ==========================================
+  // LOAD OLD MESSAGES
+  // ==========================================
+
+  async function loadMessages() {
+
+    if (!conversationId) {
+
+      chatStatus.textContent =
+        "Conversation not selected";
+
+      sendButton.disabled = true;
+
+      return;
+
+    }
+
+
+    const {
+      data,
+      error
+    } = await supabase
+      .from("messages")
+      .select("*")
+      .eq(
+        "conversation_id",
+        conversationId
+      )
+      .order(
+        "created_at",
+        {
+          ascending: true
+        }
+      );
+
+
+    if (error) {
+
+      console.error(error);
+
+      chatStatus.textContent =
+        "Failed to load messages";
+
+      return;
+
+    }
+
+
+    messagesBox.innerHTML = "";
+
+
+    data.forEach(
+      addMessage
+    );
+
+
+    scrollToBottom();
+
+  }
+
+
+  // ==========================================
+  // DISPLAY MESSAGE
+  // ==========================================
+
+  function addMessage(message) {
+
+    const div =
+      document.createElement("div");
+
+
+    div.className =
+      "message " +
+      (
+        message.sender_id === currentUser.id
+          ? "mine"
+          : "theirs"
+      );
+
+
+    const text =
+      document.createElement("div");
+
+    text.textContent =
+      message.message;
+
+
+    const time =
+      document.createElement("span");
+
+    time.className =
+      "message-time";
+
+
+    time.textContent =
+      new Date(
+        message.created_at
+      ).toLocaleTimeString(
+        [],
+        {
+          hour: "2-digit",
+          minute: "2-digit"
+        }
+      );
+
+
+    div.appendChild(text);
+
+    div.appendChild(time);
+
+    messagesBox.appendChild(div);
+
+  }
+
+
+  // ==========================================
+  // REAL-TIME
+  // ==========================================
+
+  function subscribeToMessages() {
+
+    supabase
+      .channel(
+        "chat-" + conversationId
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter:
+            "conversation_id=eq." +
+            conversationId
+        },
+        payload => {
+
+          addMessage(
+            payload.new
+          );
+
+          scrollToBottom();
+
+        }
+      )
+      .subscribe();
+
+  }
+
+
+  // ==========================================
+  // SEND MESSAGE
+  // ==========================================
+
+  async function sendMessage() {
+
+    const text =
+      messageInput.value.trim();
+
+
+    if (!text) return;
+
+
+    if (!currentUser) {
+
+      alert(
+        "Please login first."
+      );
+
+      return;
+
+    }
+
+
+    if (!conversationId) {
+
+      alert(
+        "Conversation not found."
+      );
+
+      return;
+
+    }
+
+
+    sendButton.disabled = true;
+
+
+    const {
+      error
+    } = await supabase
+      .from("messages")
+      .insert({
+
+        conversation_id:
+          conversationId,
+
+        sender_id:
+          currentUser.id,
+
+        message:
+          text
+
+      });
+
+
+    if (error) {
+
+      console.error(error);
+
+      alert(
+        "Failed to send message: " +
+        error.message
+      );
+
+    } else {
+
+      messageInput.value = "";
+
+    }
+
+
+    sendButton.disabled = false;
+
+    messageInput.focus();
+
+  }
+
+
+  // ==========================================
+  // SCROLL
+  // ==========================================
+
+  function scrollToBottom() {
+
+    messagesBox.scrollTop =
+      messagesBox.scrollHeight;
+
+  }
+
+
+  // ==========================================
+  // EVENTS
+  // ==========================================
+
+  sendButton.addEventListener(
+    "click",
+    sendMessage
+  );
+
+
+  messageInput.addEventListener(
+    "keydown",
+    event => {
+
+      if (
+        event.key === "Enter"
+      ) {
+
+        event.preventDefault();
+
+        sendMessage();
+
+      }
+
+    }
+  );
+
+
+  // ==========================================
+  // START
+  // ==========================================
+
+  getCurrentUser();
+
+</script>
+
+</body>
+  </html>
