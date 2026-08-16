@@ -2,35 +2,275 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AREWA HUB - Sellers</title>
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>AREWA HUB - Seller Center</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #075e54;
+    }
+
+    button {
+      border: none;
+      padding: 12px 16px;
+      margin: 5px;
+      border-radius: 8px;
+      background: #075e54;
+      color: white;
+      font-weight: bold;
+    }
+
+    .chat-box {
+      background: white;
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .conversation {
+      padding: 15px;
+      margin-top: 10px;
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+
+    .conversation button {
+      background: #128c7e;
+    }
+
+    #status {
+      color: #666;
+    }
+  </style>
 </head>
 
 <body>
+
+<div class="container">
 
   <h1>🏪 AREWA HUB</h1>
 
   <h2>Seller Center</h2>
 
-  <p>Sell your products to buyers across Northern Nigeria.</p>
+  <p>
+    Sell your products to buyers across Northern Nigeria.
+  </p>
 
   <button onclick="window.location.href='add-product.html'">
-  ➕ Add Product
+    ➕ Add Product
   </button>
-  <button>Manage Products</button>
+
   <button onclick="window.location.href='seller-orders.html'">
-  📦 View Orders
+    📦 View Orders
   </button>
 
-  <h3>Seller Dashboard</h3>
+  <button onclick="window.location.href='seller-wallet.html'">
+    💰 My Wallet
+  </button>
 
-  <p>📦 Products</p>
-  <p>🛒 Orders</p>
-  <p>💰 Sales</p>
 
-<button onclick="window.location.href='seller-wallet.html'">
-  💰 My Wallet
-</button>
+  <div class="chat-box">
+
+    <h2>💬 Buyer Messages</h2>
+
+    <p id="status">
+      Loading conversations...
+    </p>
+
+    <div id="conversations"></div>
+
+  </div>
+
+</div>
+
+
+<script type="module">
+
+  import {
+    createClient
+  } from
+  "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+
+  // ==============================
+  // SUPABASE
+  // ==============================
+
+  const SUPABASE_URL =
+    "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
+  const SUPABASE_ANON_KEY =
+    "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+
+  const supabase =
+    createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
+
+
+  // ==============================
+  // ELEMENTS
+  // ==============================
+
+  const status =
+    document.getElementById("status");
+
+  const conversationsBox =
+    document.getElementById("conversations");
+
+
+  // ==============================
+  // LOAD SELLER CHATS
+  // ==============================
+
+  async function loadConversations() {
+
+    const {
+      data: userData,
+      error: userError
+    } =
+    await supabase.auth.getUser();
+
+
+    if (userError || !userData.user) {
+
+      status.textContent =
+        "Please login as seller first.";
+
+      return;
+    }
+
+
+    const sellerId =
+      userData.user.id;
+
+
+    const {
+      data,
+      error
+    } =
+    await supabase
+      .from("conversations")
+      .select("*")
+      .eq("seller_id", sellerId)
+      .order(
+        "created_at",
+        {
+          ascending: false
+        }
+      );
+
+
+    if (error) {
+
+      console.error(error);
+
+      status.textContent =
+        "Failed to load chats: " +
+        error.message;
+
+      return;
+    }
+
+
+    conversationsBox.innerHTML = "";
+
+
+    if (!data || data.length === 0) {
+
+      status.textContent =
+        "No buyer messages yet.";
+
+      return;
+    }
+
+
+    status.textContent =
+      data.length +
+      " conversation(s)";
+
+
+    data.forEach(
+      conversation => {
+
+        const box =
+          document.createElement("div");
+
+        box.className =
+          "conversation";
+
+
+        const title =
+          document.createElement("strong");
+
+        title.textContent =
+          "💬 Buyer conversation";
+
+
+        const buyer =
+          document.createElement("p");
+
+        buyer.textContent =
+          "Buyer ID: " +
+          conversation.buyer_id;
+
+
+        const button =
+          document.createElement("button");
+
+        button.textContent =
+          "Open Chat";
+
+
+        button.onclick =
+          () => {
+
+            window.location.href =
+              "chat.html?conversation_id=" +
+              conversation.id;
+
+          };
+
+
+        box.appendChild(title);
+
+        box.appendChild(buyer);
+
+        box.appendChild(button);
+
+
+        conversationsBox.appendChild(box);
+
+      }
+    );
+
+  }
+
+
+  // ==============================
+  // START
+  // ==============================
+
+  loadConversations();
+
+</script>
 
 </body>
 </html>
