@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>AREWA HUB - Seller Center</title>
 
@@ -83,13 +82,12 @@
     💰 My Wallet
   </button>
 
-
   <div class="chat-box">
 
     <h2>💬 Buyer Messages</h2>
 
     <p id="status">
-      Loading conversations...
+      Checking messages...
     </p>
 
     <div id="conversations"></div>
@@ -130,163 +128,177 @@
 
   async function loadConversations() {
 
-    const {
-      data: userData,
-      error: userError
-    } =
-      await supabase.auth.getUser();
-
-
-    if (userError || !userData.user) {
+    try {
 
       status.textContent =
-        "Please login as seller first.";
-
-      return;
-    }
+        "Checking messages...";
 
 
-    const sellerId =
-      userData.user.id;
+      const {
+        data: sessionData,
+        error: sessionError
+      } =
+      await supabase.auth.getSession();
 
 
-    const {
-      data,
-      error
-    } =
-    await supabase
-      .from("conversations")
-      .select("*")
-      .eq("seller_id", sellerId)
-      .order(
-        "created_at",
-        {
-          ascending: false
+      if (
+        sessionError ||
+        !sessionData.session
+      ) {
+
+        status.textContent =
+          "❌ Please login as seller first.";
+
+        return;
+      }
+
+
+      const sellerId =
+        sessionData.session.user.id;
+
+
+      status.textContent =
+        "Loading buyer messages...";
+
+
+      const {
+        data: conversations,
+        error: conversationError
+      } =
+      await supabase
+        .from("conversations")
+        .select(
+          "id, buyer_id, seller_id, created_at"
+        )
+        .eq(
+          "seller_id",
+          sellerId
+        )
+        .order(
+          "created_at",
+          {
+            ascending: false
+          }
+        );
+
+
+      if (conversationError) {
+
+        console.error(
+          conversationError
+        );
+
+        status.textContent =
+          "❌ Failed to load chats: " +
+          conversationError.message;
+
+        return;
+      }
+
+
+      conversationsBox.innerHTML = "";
+
+
+      if (
+        !conversations ||
+        conversations.length === 0
+      ) {
+
+        status.textContent =
+          "No buyer messages yet.";
+
+        return;
+      }
+
+
+      status.textContent =
+        conversations.length +
+        " conversation(s)";
+
+
+      for (
+        const conversation of conversations
+      ) {
+
+        let buyerName =
+          "Buyer";
+
+
+        const {
+          data: buyerProfile,
+          error: buyerError
+        } =
+        await supabase
+          .from("profiles")
+          .select(
+            "full_name"
+          )
+          .eq(
+            "user_id",
+            conversation.buyer_id
+          )
+          .maybeSingle();
+
+
+        if (
+          !buyerError &&
+          buyerProfile &&
+          buyerProfile.full_name
+        ) {
+
+          buyerName =
+            buyerProfile.full_name;
+
         }
-      );
 
 
-    if (error) {
+        const box =
+          document.createElement("div");
+
+        box.className =
+          "conversation";
+
+
+        box.innerHTML = `
+          <strong>💬 Buyer conversation</strong>
+
+          <p>
+            👤 <strong>Buyer:</strong>
+            ${buyerName}
+          </p>
+        `;
+
+
+        const button =
+          document.createElement("button");
+
+        button.textContent =
+          "Open Chat";
+
+
+        button.onclick =
+          function() {
+
+            window.location.href =
+              "chat.html?conversation_id=" +
+              conversation.id;
+
+          };
+
+
+        box.appendChild(button);
+
+        conversationsBox.appendChild(box);
+
+      }
+
+    } catch (error) {
 
       console.error(error);
 
       status.textContent =
-        "Failed to load chats: " +
+        "❌ Unexpected error: " +
         error.message;
-
-      return;
-    }
-
-
-    conversationsBox.innerHTML = "";
-
-
-    if (!data || data.length === 0) {
-
-      status.textContent =
-        "No buyer messages yet.";
-
-      return;
-    }
-
-
-    status.textContent =
-      data.length +
-      " conversation(s)";
-
-
-    // GET BUYER NAMES
-
-    for (
-      const conversation of data
-    ) {
-
-      let buyerName =
-        "Buyer";
-
-
-      const {
-        data: buyer,
-        error: buyerError
-      } =
-      await supabase
-        .from("profiles")
-        .select("full_name")
-        .eq(
-          "user_id",
-          conversation.buyer_id
-        )
-        .maybeSingle();
-
-
-      if (buyerError) {
-
-        console.error(
-          "Buyer profile error:",
-          buyerError
-        );
-
-      }
-
-
-      if (
-        buyer &&
-        buyer.full_name
-      ) {
-
-        buyerName =
-          buyer.full_name;
-
-      }
-
-
-      const box =
-        document.createElement("div");
-
-      box.className =
-        "conversation";
-
-
-      const title =
-        document.createElement("strong");
-
-      title.textContent =
-        "💬 Buyer conversation";
-
-
-      const buyer =
-        document.createElement("p");
-
-      buyer.textContent =
-        "👤 Buyer: " +
-        buyerName;
-
-
-      const button =
-        document.createElement("button");
-
-      button.textContent =
-        "Open Chat";
-
-
-      button.onclick =
-        () => {
-
-          window.location.href =
-            "chat.html?conversation_id=" +
-            conversation.id;
-
-        };
-
-
-      box.appendChild(title);
-
-      box.appendChild(buyer);
-
-      box.appendChild(button);
-
-
-      conversationsBox.appendChild(box);
 
     }
 
