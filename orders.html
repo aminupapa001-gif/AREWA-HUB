@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>AREWA HUB - My Orders</title>
 
   <style>
+
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
@@ -33,6 +35,18 @@
       border-radius: 8px;
       cursor: pointer;
     }
+
+    .chat-button {
+      background: #075e54;
+      color: white;
+      font-weight: bold;
+    }
+
+    .pay-button {
+      background: #0066ff;
+      color: white;
+    }
+
   </style>
 </head>
 
@@ -42,13 +56,16 @@
 
   <h2>My Orders</h2>
 
-  <p id="status">Loading orders...</p>
+  <p id="status">
+    Loading orders...
+  </p>
 
   <div id="orders"></div>
 
   <button onclick="goBack()">
     ← Back to Buyer Dashboard
   </button>
+
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -67,274 +84,468 @@
       );
 
 
+    // ==========================================
+    // LOAD ORDERS
+    // ==========================================
+
     async function loadOrders() {
 
-  const status =
-    document.getElementById("status");
+      const status =
+        document.getElementById("status");
 
-  const container =
-    document.getElementById("orders");
-
-
-  
-
-status.textContent =
-  "Loading orders...";
+      const container =
+        document.getElementById("orders");
 
 
-  const {
-    data: { user },
-    error: authError
-  } =
-    await supabaseClient.auth.getUser();
-console.log("AUTH RESULT:", user, authError);
-
-if (authError) {
-  alert(
-    "AUTH ERROR: " +
-    authError.message
-  );
-  return;
-}
-
-  if (authError || !user) {
-
-    status.textContent =
-      "❌ Please login as a buyer first.";
-
-    return;
-  }
+      status.textContent =
+        "Loading orders...";
 
 
-  const {
-    data: orders,
-    error
-  } =
-    await supabaseClient
-      .from("orders")
-      .select(`
-  id,
-  quantity,
-  total_price,
-  delivery_address,
-  status,
-  payment_status,
-  created_at,
-  product_id
-`)
-      .eq(
-        "buyer_id",
-        user.id
-      )
-      .order(
-        "created_at",
-        {
-          ascending: false
-        }
+      // CURRENT USER
+      const {
+        data: { user },
+        error: authError
+      } =
+        await supabaseClient.auth.getUser();
+
+
+      if (authError || !user) {
+
+        status.textContent =
+          "❌ Please login as a buyer first.";
+
+        return;
+      }
+
+
+      // GET ORDERS
+      const {
+        data: orders,
+        error
+      } =
+        await supabaseClient
+          .from("orders")
+          .select(`
+            id,
+            buyer_id,
+            seller_id,
+            product_id,
+            quantity,
+            total_price,
+            delivery_address,
+            status,
+            payment_status,
+            created_at
+          `)
+          .eq(
+            "buyer_id",
+            user.id
+          )
+          .order(
+            "created_at",
+            {
+              ascending: false
+            }
+          );
+
+
+      if (error) {
+
+        console.log(error);
+
+        status.textContent =
+          "❌ Failed to load orders: " +
+          error.message;
+
+        return;
+      }
+
+
+      container.innerHTML = "";
+
+
+      if (!orders || orders.length === 0) {
+
+        status.textContent =
+          "You have no orders yet.";
+
+        return;
+      }
+
+
+      status.textContent =
+        "Orders loaded successfully.";
+
+
+      // ==========================================
+      // EACH ORDER
+      // ==========================================
+
+      for (
+        const order of orders
+      ) {
+
+        // GET SELLER PROFILE
+        const {
+          data: seller,
+          error: sellerError
+        } =
+          await supabaseClient
+            .from("profiles")
+            .select(
+              "full_name"
+            )
+            .eq(
+              "user_id",
+              order.seller_id
+            )
+            .maybeSingle();
+
+
+        const sellerName =
+          seller?.full_name ||
+          "Seller";
+
+
+        // CREATE ORDER CARD
+
+        const div =
+          document.createElement(
+            "div"
+          );
+
+        div.className =
+          "order";
+
+
+        div.innerHTML = `
+
+          <h3>
+            📦 Order
+          </h3>
+
+          <p>
+            👤 <strong>Seller:</strong>
+            ${sellerName}
+          </p>
+
+          <p>
+            🛍️ <strong>Product ID:</strong>
+            ${order.product_id}
+          </p>
+
+          <p>
+            📦 <strong>Quantity:</strong>
+            ${order.quantity}
+          </p>
+
+          <p>
+            💰 <strong>Total:</strong>
+            ₦${Number(
+              order.total_price
+            ).toLocaleString()}
+          </p>
+
+          <p>
+            📍 <strong>Delivery Address:</strong>
+            ${order.delivery_address}
+          </p>
+
+          <p>
+            📅 <strong>Order Date:</strong>
+            ${new Date(
+              order.created_at
+            ).toLocaleString()}
+          </p>
+
+          <div class="status">
+
+            <p>
+              🕐 <strong>Status:</strong>
+              ${order.status}
+            </p>
+
+            <p>
+              💳 <strong>Payment:</strong>
+              ${order.payment_status}
+            </p>
+
+
+            <!-- CHAT SELLER -->
+
+            <button
+              class="chat-button"
+              onclick="chatWithSeller('${order.seller_id}')"
+            >
+              💬 Chat Seller
+            </button>
+
+
+            <!-- PAYMENT -->
+
+            ${
+              order.payment_status === "unpaid"
+              ? `
+                <button
+                  class="pay-button"
+                  onclick="payForOrder('${order.id}')"
+                >
+                  💳 Pay Now
+                </button>
+              `
+              : ""
+            }
+
+
+            <!-- CONFIRM RECEIVED -->
+
+            ${
+              order.status === "shipped"
+              ? `
+                <hr>
+
+                <p>
+                  🚚 Your order has been shipped.
+                </p>
+
+                <button
+                  onclick="confirmReceived('${order.id}')"
+                >
+                  ✅ Confirm Received
+                </button>
+              `
+              : ""
+            }
+
+          </div>
+
+        `;
+
+
+        container.appendChild(
+          div
+        );
+
+      }
+
+    }
+
+
+    // ==========================================
+    // CHAT SELLER
+    // ==========================================
+
+    async function chatWithSeller(
+      sellerId
+    ) {
+
+      const {
+        data: { user },
+        error: authError
+      } =
+        await supabaseClient.auth.getUser();
+
+
+      if (
+        authError ||
+        !user
+      ) {
+
+        alert(
+          "Please login first."
+        );
+
+        return;
+      }
+
+
+      // FIND EXISTING CONVERSATION
+
+      const {
+        data: existing,
+        error: findError
+      } =
+        await supabaseClient
+          .from("conversations")
+          .select("id")
+          .eq(
+            "buyer_id",
+            user.id
+          )
+          .eq(
+            "seller_id",
+            sellerId
+          )
+          .maybeSingle();
+
+
+      if (findError) {
+
+        console.error(
+          findError
+        );
+
+        alert(
+          "❌ Could not find conversation: " +
+          findError.message
+        );
+
+        return;
+      }
+
+
+      // IF CONVERSATION EXISTS
+
+      if (existing) {
+
+        window.location.href =
+          "chat.html?conversation_id=" +
+          existing.id;
+
+        return;
+      }
+
+
+      // CREATE NEW CONVERSATION
+
+      const {
+        data: conversation,
+        error: createError
+      } =
+        await supabaseClient
+          .from("conversations")
+          .insert({
+
+            buyer_id:
+              user.id,
+
+            seller_id:
+              sellerId
+
+          })
+          .select("id")
+          .single();
+
+
+      if (createError) {
+
+        console.error(
+          createError
+        );
+
+        alert(
+          "❌ Could not create conversation: " +
+          createError.message
+        );
+
+        return;
+      }
+
+
+      // OPEN CHAT
+
+      window.location.href =
+        "chat.html?conversation_id=" +
+        conversation.id;
+
+    }
+
+
+    // ==========================================
+    // CONFIRM RECEIVED
+    // ==========================================
+
+    async function confirmReceived(
+      orderId
+    ) {
+
+      const confirmOrder =
+        confirm(
+          "Have you received this order?"
+        );
+
+
+      if (!confirmOrder) {
+        return;
+      }
+
+
+      const {
+        error
+      } =
+        await supabaseClient.rpc(
+          "confirm_order_received",
+          {
+            p_order_id:
+              orderId
+          }
+        );
+
+
+      if (error) {
+
+        alert(
+          "❌ Failed to confirm order: " +
+          error.message
+        );
+
+        return;
+      }
+
+
+      alert(
+        "✅ Order received successfully!"
       );
 
 
-  if (error) {
+      loadOrders();
 
-    console.log(error);
-
-    status.textContent =
-      "❌ Failed to load orders: " +
-      error.message;
-
-    return;
-  }
+    }
 
 
-  container.innerHTML = "";
+    // ==========================================
+    // PAYMENT
+    // ==========================================
 
+    async function payForOrder(
+      orderId
+    ) {
 
-  if (!orders || !orders.length) {
-
-    status.textContent =
-      "You have no orders yet.";
-
-    return;
-  }
-
-
-  status.textContent =
-    "Orders loaded successfully.";
-
-
-  orders.forEach(
-    (order) => {
-
-      const div =
-        document.createElement(
-          "div"
+      const confirmPayment =
+        confirm(
+          "Proceed with test payment for this order?"
         );
 
-      div.className =
-        "order-card";
 
-
-      div.innerHTML = `
-
-        <h3>
-          📦 Order
-        </h3>
-
-        <p>
-          Product:
-          ${order.products?.name || "Product"}
-        </p>
-
-        <p>
-          Quantity:
-          ${order.quantity}
-        </p>
-
-        <p>
-          Total:
-          ₦${Number(
-            order.total_price
-          ).toLocaleString()}
-        </p>
-
-        <p>
-          Delivery Address:
-          ${order.delivery_address}
-        </p>
-
-        <p>
-          Order Date:
-          ${new Date(
-            order.created_at
-          ).toLocaleString()}
-        </p>
-
-        <div class="status">
-
-          <p>
-            🕐 Status:
-            <strong>
-              ${order.status}
-            </strong>
-          </p>
-
-          <p>
-            💳 Payment:
-            <strong>
-              ${order.payment_status}
-            </strong>
-          </p>
-
-          ${
-            order.payment_status === "unpaid"
-            ? `
-              <button
-                onclick="payForOrder('${order.id}')"
-              >
-                💳 Pay Now
-              </button>
-            `
-            : ""
-          }
-
-          ${
-            order.status === "shipped"
-            ? `
-              <hr>
-
-              <p>
-                🚚 Your order has been shipped.
-              </p>
-
-              <button
-                onclick="confirmReceived('${order.id}')"
-              >
-                ✅ Confirm Received
-              </button>
-            `
-            : ""
-          }
-
-        </div>
-
-      `;
-
-
-      container.appendChild(div);
-
-    }
-  );
-
-    }
-
-  
-    async function confirmReceived(orderId) {
-
-  const confirmOrder =
-    confirm(
-      "Have you received this order?"
-    );
-
-  if (!confirmOrder) {
-    return;
-  }
-
-  const {
-    error
-  } =
-    await supabaseClient.rpc(
-      "confirm_order_received",
-      {
-        p_order_id: orderId
+      if (!confirmPayment) {
+        return;
       }
-    );
-
-  if (error) {
-
-    alert(
-      "❌ Failed to confirm order: " +
-      error.message
-    );
-
-    return;
-  }
-
-  alert(
-    "✅ Order received successfully!"
-  );
-
-  loadOrders();
-
-}
 
 
-async function payForOrder(orderId) {
+      window.location.href =
+        "payment.html?order_id=" +
+        orderId;
 
-  const confirmPayment =
-    confirm(
-      "Proceed with test payment for this order?"
-    );
-
-  if (!confirmPayment) {
-    return;
-  }
-
-  window.location.href =
-    "payment.html?order_id=" +
-    orderId;
-
-}
+    }
 
 
-function goBack() {
+    // ==========================================
+    // BACK
+    // ==========================================
 
-  window.location.href =
-    "buyer.html";
+    function goBack() {
 
-}
+      window.location.href =
+        "buyer-dashboard.html";
+
+    }
 
 
-loadOrders();
+    // ==========================================
+    // START
+    // ==========================================
+
+    loadOrders();
 
   </script>
 
