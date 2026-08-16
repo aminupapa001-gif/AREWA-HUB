@@ -107,10 +107,6 @@
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
 
-  // ==============================
-  // SUPABASE
-  // ==============================
-
   const SUPABASE_URL =
     "https://ffjofoeiwaiyxecbeuwt.supabase.co";
 
@@ -125,10 +121,6 @@
     );
 
 
-  // ==============================
-  // ELEMENTS
-  // ==============================
-
   const status =
     document.getElementById("status");
 
@@ -136,17 +128,13 @@
     document.getElementById("conversations");
 
 
-  // ==============================
-  // LOAD SELLER CHATS
-  // ==============================
-
   async function loadConversations() {
 
     const {
       data: userData,
       error: userError
     } =
-    await supabase.auth.getUser();
+      await supabase.auth.getUser();
 
 
     if (userError || !userData.user) {
@@ -207,66 +195,103 @@
       " conversation(s)";
 
 
-    data.forEach(
-      conversation => {
+    // GET BUYER NAMES
 
-        const box =
-          document.createElement("div");
+    for (
+      const conversation of data
+    ) {
 
-        box.className =
-          "conversation";
-
-
-        const title =
-          document.createElement("strong");
-
-        title.textContent =
-          "💬 Buyer conversation";
+      let buyerName =
+        "Buyer";
 
 
-        const buyer =
-          document.createElement("p");
-
-        buyer.textContent =
-          "Buyer ID: " +
-          conversation.buyer_id;
-
-
-        const button =
-          document.createElement("button");
-
-        button.textContent =
-          "Open Chat";
-
-
-        button.onclick =
-          () => {
-
-            window.location.href =
-              "chat.html?conversation_id=" +
-              conversation.id;
-
-          };
+      const {
+        data: buyer,
+        error: buyerError
+      } =
+      await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq(
+          "user_id",
+          conversation.buyer_id
+        )
+        .maybeSingle();
 
 
-        box.appendChild(title);
+      if (buyerError) {
 
-        box.appendChild(buyer);
-
-        box.appendChild(button);
-
-
-        conversationsBox.appendChild(box);
+        console.error(
+          "Buyer profile error:",
+          buyerError
+        );
 
       }
-    );
+
+
+      if (
+        buyer &&
+        buyer.full_name
+      ) {
+
+        buyerName =
+          buyer.full_name;
+
+      }
+
+
+      const box =
+        document.createElement("div");
+
+      box.className =
+        "conversation";
+
+
+      const title =
+        document.createElement("strong");
+
+      title.textContent =
+        "💬 Buyer conversation";
+
+
+      const buyer =
+        document.createElement("p");
+
+      buyer.textContent =
+        "👤 Buyer: " +
+        buyerName;
+
+
+      const button =
+        document.createElement("button");
+
+      button.textContent =
+        "Open Chat";
+
+
+      button.onclick =
+        () => {
+
+          window.location.href =
+            "chat.html?conversation_id=" +
+            conversation.id;
+
+        };
+
+
+      box.appendChild(title);
+
+      box.appendChild(buyer);
+
+      box.appendChild(button);
+
+
+      conversationsBox.appendChild(box);
+
+    }
 
   }
 
-
-  // ==============================
-  // START
-  // ==============================
 
   loadConversations();
 
