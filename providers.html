@@ -1,111 +1,286 @@
-<!DOCTYPE html>  <html lang="en">  
-<head>  
-  <meta charset="UTF-8">  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-  <title>AREWA HUB - Providers</title>    <style>  
-    body {  
-      font-family: Arial, sans-serif;  
-      padding: 20px;  
-    }  
-  
-    .provider-card {  
-      border: 1px solid #ddd;  
-      border-radius: 12px;  
-      padding: 16px;  
-      margin: 15px 0;  
-      background: #fff;  
-      box-shadow: 0 3px 10px rgba(0,0,0,0.08);  
-    }  
-  
-    button {  
-      padding: 10px 16px;  
-      border: none;  
-      border-radius: 8px;  
-      cursor: pointer;  
-      background: #0b7a3b;  
-      color: white;  
-      font-weight: bold;  
-    }  
-  </style>  </head>  <body>    <h1>AREWA HUB</h1>    <h2>Service Providers</h2>    <p id="selectedService"></p>    <div id="providersList">  
-    Loading providers...  
-  </div>    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>    <script>  
-    const SUPABASE_URL = "https://ffjofoeiwaiyxecbeuwt.supabase.co";  
-    const SUPABASE_KEY = "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";  
-  
-    const supabaseClient = supabase.createClient(  
-      SUPABASE_URL,  
-      SUPABASE_KEY  
-    );  
-  
-    const params = new URLSearchParams(window.location.search);  
-    const service = params.get("service");  
-  
-    document.getElementById("selectedService").textContent =  
-      service  
-        ? "Providers for: " + service  
-        : "All Service Providers";  
-  
-    async function loadProviders() {  
-  
-      const providersList =  
-        document.getElementById("providersList");  
-  
-      let query = supabaseClient  
-        .from("provider_profiles")  
-        .select("*");  
-  
-      if (service) {  
-        query = query.ilike("service", "%" + service + "%");  
-      }  
-  
-      const { data, error } = await query;  
-  
-      if (error) {  
-        console.log(error);  
-  
-        providersList.innerHTML =  
-          "<p>Unable to load providers.</p>";  
-  
-        return;  
-      }  
-  
-      providersList.innerHTML = "";  
-  
-      if (!data || data.length === 0) {  
-  
-        providersList.innerHTML =  
-          "<p>No providers found for this service.</p>";  
-  
-        return;  
-      }  
-  
-      data.forEach(function(provider) {  
-  
-        providersList.innerHTML += `  
-          <div class="provider-card">  
-  
-            <h3>🎨 ${provider.full_name}</h3>  
-  
-            <p>🛠️ ${provider.service}</p>  
-  
-            <p>📍 ${provider.location}</p>  
-  
-            <p>⭐ ${provider.rating || "New Provider"}</p>  
-  
-            <p>📝 ${provider.bio || "No bio available."}</p>  
-  
-            <p>📞 ${provider.phone}</p>  
-  
-            <button onclick="window.location.href='contact.html?id=${provider.id}'">  
-              Contact Provider  
-            </button>  
-  
-          </div>  
-        `;  
-  
-      });  
-    }  
-  
-    loadProviders();  
-  </script>  </body>  
-</html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>AREWA HUB - Providers</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f5f7fa;
+    }
+
+    h1 {
+      color: #0b7a3b;
+    }
+
+    .provider-card {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 16px;
+      margin: 15px 0;
+      background: #fff;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    }
+
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #0b7a3b;
+      color: white;
+      font-weight: bold;
+    }
+
+    .empty {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <h1>🛠️ AREWA HUB</h1>
+
+  <h2>Service Providers</h2>
+
+  <p id="selectedService">
+    Loading...
+  </p>
+
+  <div id="providersList">
+    Loading providers...
+  </div>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+
+    const SUPABASE_URL =
+      "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+
+    const supabaseClient =
+      supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+
+    const service =
+      params.get("service");
+
+
+    document.getElementById(
+      "selectedService"
+    ).textContent =
+      service
+        ? "Providers for: " + service
+        : "All Service Providers";
+
+
+    async function loadProviders() {
+
+      const providersList =
+        document.getElementById(
+          "providersList"
+        );
+
+
+      const {
+        data,
+        error
+      } =
+      await supabaseClient
+        .from("provider_profiles")
+        .select("*")
+        .order(
+          "created_at",
+          {
+            ascending: false
+          }
+        );
+
+
+      if (error) {
+
+        console.error(
+          "Provider error:",
+          error
+        );
+
+        providersList.innerHTML = `
+          <div class="empty">
+            ❌ Unable to load providers.
+            <br><br>
+            ${error.message}
+          </div>
+        `;
+
+        return;
+      }
+
+
+      console.log(
+        "ALL PROVIDERS:",
+        data
+      );
+
+
+      let providers =
+        data || [];
+
+
+      /*
+        FILTER SERVICE
+        Case-insensitive
+      */
+
+      if (service) {
+
+        const searchService =
+          service
+            .trim()
+            .toLowerCase();
+
+
+        providers =
+          providers.filter(
+            function(provider) {
+
+              const providerService =
+                (provider.service || "")
+                  .trim()
+                  .toLowerCase();
+
+
+              return (
+                providerService
+                  .includes(searchService) ||
+
+                searchService
+                  .includes(providerService)
+              );
+
+            }
+          );
+
+      }
+
+
+      providersList.innerHTML = "";
+
+
+      if (providers.length === 0) {
+
+        providersList.innerHTML = `
+          <div class="empty">
+
+            ❌ No providers found for:
+
+            <strong>
+              ${service || "this service"}
+            </strong>
+
+            <br><br>
+
+            Please try another service.
+
+          </div>
+        `;
+
+        return;
+      }
+
+
+      providers.forEach(
+        function(provider) {
+
+          const card =
+            document.createElement(
+              "div"
+            );
+
+
+          card.className =
+            "provider-card";
+
+
+          card.innerHTML = `
+
+            <h3>
+              👤 ${provider.full_name || "Provider"}
+            </h3>
+
+            <p>
+              🛠️ <strong>Service:</strong>
+              ${provider.service || "Not specified"}
+            </p>
+
+            <p>
+              📍 <strong>Location:</strong>
+              ${provider.location || "Not specified"}
+            </p>
+
+            <p>
+              📞 <strong>Phone:</strong>
+              ${provider.phone || "Not available"}
+            </p>
+
+            <p>
+              💬 <strong>WhatsApp:</strong>
+              ${provider.whatsapp || "Not available"}
+            </p>
+
+            <p>
+              📝 <strong>About:</strong>
+              ${provider.bio || "No bio available."}
+            </p>
+
+            <button
+              onclick="
+                window.location.href =
+                'contact.html?id=${provider.id}'
+              "
+            >
+              💬 Contact Provider
+            </button>
+
+          `;
+
+
+          providersList.appendChild(
+            card
+          );
+
+        }
+      );
+
+    }
+
+
+    loadProviders();
+
+  </script>
+
+</body>
+
+</html>
