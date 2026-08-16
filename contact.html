@@ -1,101 +1,408 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
   <title>AREWA HUB - Contact Provider</title>
+
+
+  <style>
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
+    }
+
+    .container {
+      max-width: 650px;
+      margin: auto;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 14px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      color: #075e54;
+    }
+
+    .provider-name {
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .info {
+      margin: 10px 0;
+      color: #444;
+    }
+
+    button {
+      width: 100%;
+      padding: 13px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 9px;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .chat-button {
+      background: #075e54;
+    }
+
+    .whatsapp-button {
+      background: #128c7e;
+    }
+
+    .call-button {
+      background: #0b7a3b;
+    }
+
+    #message {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+  </style>
+
 </head>
+
 
 <body>
 
-  <h1>AREWA HUB</h1>
+<div class="container">
+
+  <h1>🏪 AREWA HUB</h1>
 
   <h2>Contact Provider</h2>
 
-  <div id="providerInfo">
-    Loading provider...
+
+  <div class="card">
+
+    <div id="providerInfo">
+      Loading provider...
+    </div>
+
+    <p id="message"></p>
+
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</div>
 
-  <script>
-    const SUPABASE_URL = "https://ffjofoeiwaiyxecbeuwt.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
 
-    const supabaseClient = supabase.createClient(
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+<script>
+
+  const SUPABASE_URL =
+    "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
+
+  const SUPABASE_KEY =
+    "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+
+  const supabaseClient =
+    supabase.createClient(
       SUPABASE_URL,
       SUPABASE_KEY
     );
 
-    const params = new URLSearchParams(window.location.search);
-    const providerId = params.get("id");
 
-    async function loadProvider() {
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
 
-      const providerInfo =
-        document.getElementById("providerInfo");
 
-      if (!providerId) {
-        providerInfo.innerHTML =
-          "<p>Provider ID not found.</p>";
-        return;
-      }
+  const providerId =
+    params.get("id");
 
-      const { data, error } = await supabaseClient
-        .from("provider_profiles")
-        .select("*")
-        .eq("id", providerId)
-        .single();
 
-      if (error || !data) {
+  const providerInfo =
+    document.getElementById(
+      "providerInfo"
+    );
 
-        console.log(error);
 
-        providerInfo.innerHTML =
-          "<p>Provider not found.</p>";
+  const message =
+    document.getElementById(
+      "message"
+    );
 
-        return;
-      }
 
-      const whatsappNumber =
-        data.whatsapp
-          ? data.whatsapp.replace(/\D/g, "")
-          : "";
+  let providerData = null;
 
-      const whatsappInternational =
-        whatsappNumber.startsWith("234")
-          ? whatsappNumber
-          : "234" + whatsappNumber.replace(/^0/, "");
 
-      providerInfo.innerHTML = `
-        <h3>🎨 ${data.full_name}</h3>
+  async function loadProvider() {
 
-        <p>🛠️ ${data.service}</p>
+    if (!providerId) {
 
-        <p>📍 ${data.location}</p>
+      providerInfo.innerHTML =
+        "<p>❌ Provider ID not found.</p>";
 
-        <p>⭐ ${data.rating || "New Provider"}</p>
+      return;
 
-        <p>📝 ${data.bio || "No bio available."}</p>
-
-        <p>📞 ${data.phone}</p>
-
-        <br>
-
-        <a href="tel:${data.phone}">
-          <button>📞 Call Provider</button>
-        </a>
-
-        <br><br>
-
-        <a href="https://wa.me/${whatsappInternational}">
-          <button>💬 WhatsApp Provider</button>
-        </a>
-      `;
     }
 
-    loadProvider();
-  </script>
+
+    const {
+      data,
+      error
+    } =
+    await supabaseClient
+      .from("provider_profiles")
+      .select("*")
+      .eq("id", providerId)
+      .single();
+
+
+    if (error || !data) {
+
+      console.log(error);
+
+      providerInfo.innerHTML =
+        "<p>❌ Provider not found.</p>";
+
+      return;
+
+    }
+
+
+    providerData = data;
+
+
+    let whatsappNumber =
+      data.whatsapp
+        ? data.whatsapp.replace(/\D/g, "")
+        : "";
+
+
+    let whatsappInternational =
+      whatsappNumber.startsWith("234")
+        ? whatsappNumber
+        : "234" +
+          whatsappNumber.replace(
+            /^0/,
+            ""
+          );
+
+
+    providerInfo.innerHTML = `
+
+      <div class="provider-name">
+        👤 ${data.full_name}
+      </div>
+
+      <p class="info">
+        🛠️ <strong>Service:</strong>
+        ${data.service}
+      </p>
+
+      <p class="info">
+        📍 <strong>Location:</strong>
+        ${data.location}
+      </p>
+
+      <p class="info">
+        📞 <strong>Phone:</strong>
+        ${data.phone}
+      </p>
+
+      <p class="info">
+        💬 <strong>WhatsApp:</strong>
+        ${data.whatsapp || "Not provided"}
+      </p>
+
+      <p class="info">
+        📝 <strong>About:</strong>
+        ${data.bio || "No bio available."}
+      </p>
+
+
+      <button
+        class="chat-button"
+        onclick="startChat()"
+      >
+        💬 Message Provider
+      </button>
+
+
+      <a
+        href="tel:${data.phone}"
+        style="text-decoration:none;"
+      >
+
+        <button class="call-button">
+          📞 Call Provider
+        </button>
+
+      </a>
+
+
+      ${
+        whatsappNumber
+        ?
+        `
+        <a
+          href="https://wa.me/${whatsappInternational}"
+          target="_blank"
+          style="text-decoration:none;"
+        >
+
+          <button class="whatsapp-button">
+            💬 WhatsApp Provider
+          </button>
+
+        </a>
+        `
+        :
+        ""
+      }
+
+    `;
+
+  }
+
+
+  async function startChat() {
+
+    message.textContent =
+      "Checking your account...";
+
+
+    const {
+      data: userData,
+      error: userError
+    } =
+    await supabaseClient.auth.getUser();
+
+
+    if (
+      userError ||
+      !userData.user
+    ) {
+
+      message.textContent =
+        "❌ Please login as a buyer first.";
+
+      return;
+
+    }
+
+
+    const buyerId =
+      userData.user.id;
+
+
+    if (
+      buyerId === providerData.user_id
+    ) {
+
+      message.textContent =
+        "❌ You cannot message yourself.";
+
+      return;
+
+    }
+
+
+    message.textContent =
+      "Opening chat...";
+
+
+    const {
+      data: existing,
+      error: existingError
+    } =
+    await supabaseClient
+      .from("conversations")
+      .select("id")
+      .eq("buyer_id", buyerId)
+      .eq("seller_id", providerData.user_id)
+      .maybeSingle();
+
+
+    if (
+      existingError &&
+      existingError.code !== "PGRST116"
+    ) {
+
+      console.log(existingError);
+
+    }
+
+
+    if (existing) {
+
+      window.location.href =
+        "chat.html?conversation_id=" +
+        existing.id;
+
+      return;
+
+    }
+
+
+    const {
+      data: newConversation,
+      error: conversationError
+    } =
+    await supabaseClient
+      .from("conversations")
+      .insert([
+        {
+          buyer_id: buyerId,
+          seller_id: providerData.user_id
+        }
+      ])
+      .select()
+      .single();
+
+
+    if (conversationError) {
+
+      console.log(
+        conversationError
+      );
+
+      message.textContent =
+        "❌ Could not start chat: " +
+        conversationError.message;
+
+      return;
+
+    }
+
+
+    window.location.href =
+      "chat.html?conversation_id=" +
+      newConversation.id;
+
+  }
+
+
+  loadProvider();
+
+</script>
+
 
 </body>
+
 </html>
