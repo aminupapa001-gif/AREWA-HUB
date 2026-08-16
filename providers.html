@@ -14,36 +14,23 @@
       background: #f5f7fa;
     }
 
-    h1 {
-      color: #0b7a3b;
-    }
-
     .provider-card {
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      padding: 16px;
+      background: white;
+      padding: 20px;
       margin: 15px 0;
-      background: #fff;
+      border-radius: 12px;
       box-shadow: 0 3px 10px rgba(0,0,0,0.08);
     }
 
     button {
-      padding: 10px 16px;
+      padding: 12px 18px;
       border: none;
       border-radius: 8px;
-      cursor: pointer;
       background: #0b7a3b;
       color: white;
       font-weight: bold;
     }
-
-    .empty {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-    }
   </style>
-
 </head>
 
 <body>
@@ -99,177 +86,98 @@
 
     async function loadProviders() {
 
-      const providersList =
+      const list =
         document.getElementById(
           "providersList"
         );
 
 
-      const {
-        data,
-        error
-      } =
-      await supabaseClient
-        .from("provider_profiles")
-        .select("*")
-        .order(
-          "created_at",
-          {
-            ascending: false
-          }
-        );
+      const result =
+        await supabaseClient
+          .from("provider_profiles")
+          .select("*");
 
 
-      if (error) {
+      console.log(
+        "SUPABASE RESULT:",
+        result
+      );
 
-        console.error(
-          "Provider error:",
-          error
-        );
 
-        providersList.innerHTML = `
-          <div class="empty">
-            ❌ Unable to load providers.
-            <br><br>
-            ${error.message}
-          </div>
-        `;
+      if (result.error) {
+
+        list.innerHTML =
+          "<p>❌ ERROR: " +
+          result.error.message +
+          "</p>";
 
         return;
       }
 
 
-      console.log(
-        "ALL PROVIDERS:",
-        data
-      );
-
-
-      let providers =
-        data || [];
-
-
-      /*
-        FILTER SERVICE
-        Case-insensitive
-      */
-
-      if (service) {
-
-        const searchService =
-          service
-            .trim()
-            .toLowerCase();
-
-
-        providers =
-          providers.filter(
-            function(provider) {
-
-              const providerService =
-                (provider.service || "")
-                  .trim()
-                  .toLowerCase();
-
-
-              return (
-                providerService
-                  .includes(searchService) ||
-
-                searchService
-                  .includes(providerService)
-              );
-
-            }
-          );
-
-      }
-
-
-      providersList.innerHTML = "";
+      const providers =
+        result.data || [];
 
 
       if (providers.length === 0) {
 
-        providersList.innerHTML = `
-          <div class="empty">
-
-            ❌ No providers found for:
-
-            <strong>
-              ${service || "this service"}
-            </strong>
-
-            <br><br>
-
-            Please try another service.
-
-          </div>
-        `;
+        list.innerHTML =
+          "<p>❌ Browser received ZERO providers.</p>";
 
         return;
       }
+
+
+      list.innerHTML = "";
 
 
       providers.forEach(
         function(provider) {
 
-          const card =
-            document.createElement(
-              "div"
-            );
+          list.innerHTML += `
 
+            <div class="provider-card">
 
-          card.className =
-            "provider-card";
+              <h3>
+                👤 ${provider.full_name}
+              </h3>
 
+              <p>
+                🛠️ Service:
+                ${provider.service}
+              </p>
 
-          card.innerHTML = `
+              <p>
+                📍 Location:
+                ${provider.location}
+              </p>
 
-            <h3>
-              👤 ${provider.full_name || "Provider"}
-            </h3>
+              <p>
+                📞 Phone:
+                ${provider.phone}
+              </p>
 
-            <p>
-              🛠️ <strong>Service:</strong>
-              ${provider.service || "Not specified"}
-            </p>
+              <p>
+                💬 WhatsApp:
+                ${provider.whatsapp}
+              </p>
 
-            <p>
-              📍 <strong>Location:</strong>
-              ${provider.location || "Not specified"}
-            </p>
+              <p>
+                📝 ${provider.bio || ""}
+              </p>
 
-            <p>
-              📞 <strong>Phone:</strong>
-              ${provider.phone || "Not available"}
-            </p>
+              <button
+                onclick="
+                  window.location.href =
+                  'contact.html?id=${provider.id}'
+                "
+              >
+                💬 Contact Provider
+              </button>
 
-            <p>
-              💬 <strong>WhatsApp:</strong>
-              ${provider.whatsapp || "Not available"}
-            </p>
-
-            <p>
-              📝 <strong>About:</strong>
-              ${provider.bio || "No bio available."}
-            </p>
-
-            <button
-              onclick="
-                window.location.href =
-                'contact.html?id=${provider.id}'
-              "
-            >
-              💬 Contact Provider
-            </button>
+            </div>
 
           `;
-
-
-          providersList.appendChild(
-            card
-          );
 
         }
       );
