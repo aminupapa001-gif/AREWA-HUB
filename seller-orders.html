@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>AREWA HUB - Seller Orders</title>
 
   <style>
@@ -21,15 +22,14 @@
 
     .status {
       background: #eee;
-      padding: 10px;
+      padding: 12px;
       border-radius: 8px;
       margin-top: 10px;
     }
 
     button {
       padding: 12px 18px;
-      margin-top: 15px;
-      margin-right: 8px;
+      margin-top: 10px;
       border: none;
       border-radius: 8px;
       cursor: pointer;
@@ -42,11 +42,13 @@
     }
 
     .processing-button {
-      background: #ddd;
+      background: #ff9800;
+      color: white;
     }
 
     .shipped-button {
-      background: #ddd;
+      background: #2196f3;
+      color: white;
     }
   </style>
 </head>
@@ -76,6 +78,7 @@
     const SUPABASE_KEY =
       "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
 
+
     const supabaseClient =
       supabase.createClient(
         SUPABASE_URL,
@@ -96,6 +99,10 @@
         document.getElementById("orders");
 
 
+      status.textContent =
+        "Loading orders...";
+
+
       const {
         data: { user },
         error: authError
@@ -112,6 +119,8 @@
       }
 
 
+      // CHECK SELLER PROFILE
+
       const {
         data: profile,
         error: profileError
@@ -119,7 +128,10 @@
         await supabaseClient
           .from("profiles")
           .select("role")
-          .eq("user_id", user.id)
+          .eq(
+            "user_id",
+            user.id
+          )
           .maybeSingle();
 
 
@@ -147,6 +159,8 @@
       }
 
 
+      // GET ORDERS
+
       const {
         data: orders,
         error
@@ -156,6 +170,7 @@
           .select(`
             id,
             buyer_id,
+            seller_id,
             product_id,
             quantity,
             total_price,
@@ -164,21 +179,24 @@
             payment_status,
             created_at,
             products (
-              name,
-              description,
-              price,
-              location
+              name
             )
           `)
-          .eq("seller_id", user.id)
-          .order("created_at", {
-            ascending: false
-          });
+          .eq(
+            "seller_id",
+            user.id
+          )
+          .order(
+            "created_at",
+            {
+              ascending: false
+            }
+          );
 
 
       if (error) {
 
-        console.log(error);
+        console.error(error);
 
         status.textContent =
           "❌ Failed to load orders: " +
@@ -186,6 +204,9 @@
 
         return;
       }
+
+
+      container.innerHTML = "";
 
 
       if (
@@ -204,13 +225,51 @@
         "Orders loaded successfully.";
 
 
-      container.innerHTML = "";
+      // ==========================================
+      // DISPLAY EACH ORDER
+      // ==========================================
+
+      for (const order of orders) {
+
+        let buyerName =
+          "Buyer";
 
 
-      orders.forEach(function(order) {
+        // GET BUYER PROFILE
 
-        const product =
-          order.products;
+        const {
+          data: buyer,
+          error: buyerError
+        } =
+          await supabaseClient
+            .from("profiles")
+            .select("full_name")
+            .eq(
+              "user_id",
+              order.buyer_id
+            )
+            .maybeSingle();
+
+
+        if (buyerError) {
+
+          console.error(
+            "Buyer profile error:",
+            buyerError
+          );
+
+        }
+
+
+        if (
+          buyer &&
+          buyer.full_name
+        ) {
+
+          buyerName =
+            buyer.full_name;
+
+        }
 
 
         const div =
@@ -220,107 +279,111 @@
           "order";
 
 
-        const date =
-          new Date(
-            order.created_at
-          ).toLocaleString();
-
-
         div.innerHTML = `
 
-          <h3>📦 New Order</h3>
+          <h3>
+            📦 New Order
+          </h3>
 
           <p>
-            <strong>Product:</strong>
-            ${product
-              ? product.name
-              : "Product unavailable"}
+            👤 <strong>Buyer:</strong>
+            ${buyerName}
           </p>
 
           <p>
-            <strong>Quantity:</strong>
+            🛍️ <strong>Product:</strong>
+            ${order.products?.name || "Product"}
+          </p>
+
+          <p>
+            📦 <strong>Quantity:</strong>
             ${order.quantity}
           </p>
 
           <p>
-            <strong>Total:</strong>
+            💰 <strong>Total:</strong>
             ₦${Number(
               order.total_price
             ).toLocaleString()}
           </p>
 
           <p>
-            <strong>Delivery Address:</strong>
-            ${order.delivery_address || "Not provided"}
+            📍 <strong>Delivery Address:</strong>
+            ${order.delivery_address}
           </p>
 
           <p>
-            <strong>Order Date:</strong>
-            ${date}
+            📅 <strong>Order Date:</strong>
+            ${new Date(
+              order.created_at
+            ).toLocaleString()}
           </p>
+
 
           <div class="status">
 
             <p>
-              🕐 Status:
-              <strong>${order.status}</strong>
+              🕐 <strong>Status:</strong>
+              ${order.status}
             </p>
 
             <p>
-              💳 Payment:
-              <strong>${order.payment_status}</strong>
+              💳 <strong>Payment:</strong>
+              ${order.payment_status}
             </p>
 
-            <hr>
-
-            <p><strong>Update Order:</strong></p>
-
-            <button
-              class="processing-button"
-              onclick="updateOrderStatus('${order.id}', 'processing')">
-              📦 Processing
-            </button>
-
-            <button
-              class="shipped-button"
-              onclick="updateOrderStatus('${order.id}', 'shipped')">
-              🚚 Shipped
-            </button>
-
-            <br>
 
             <button
               class="chat-button"
-              onclick="openBuyerChat('${order.buyer_id}')">
+              onclick="chatWithBuyer('${order.buyer_id}')"
+            >
               💬 Chat Buyer
+            </button>
+
+
+            <br>
+
+
+            <button
+              class="processing-button"
+              onclick="updateOrderStatus(
+                '${order.id}',
+                'processing'
+              )"
+            >
+              📦 Processing
+            </button>
+
+
+            <button
+              class="shipped-button"
+              onclick="updateOrderStatus(
+                '${order.id}',
+                'shipped'
+              )"
+            >
+              🚚 Shipped
             </button>
 
           </div>
 
         `;
 
+
         container.appendChild(div);
 
-      });
+      }
 
     }
 
 
     // ==========================================
-    // OPEN CHAT WITH BUYER
+    // CHAT BUYER
     // ==========================================
 
-    async function openBuyerChat(buyerId) {
-
-      if (!buyerId) {
-
-        alert(
-          "❌ Buyer information not found."
-        );
-
-        return;
-      }
-
+    async function chatWithBuyer(
+      buyerId
+    ) {
 
       const {
         data: { user },
@@ -332,30 +395,34 @@
       if (authError || !user) {
 
         alert(
-          "❌ Please login first."
+          "Please login first."
         );
 
         return;
       }
 
 
-      // Check if conversation already exists
+      // FIND EXISTING CONVERSATION
 
       const {
-        data: existingConversation,
+        data: existing,
         error: findError
       } =
         await supabaseClient
           .from("conversations")
           .select("id")
-          .eq("buyer_id", buyerId)
-          .eq("seller_id", user.id)
+          .eq(
+            "buyer_id",
+            buyerId
+          )
+          .eq(
+            "seller_id",
+            user.id
+          )
           .maybeSingle();
 
 
       if (findError) {
-
-        console.error(findError);
 
         alert(
           "❌ Could not find conversation: " +
@@ -366,58 +433,51 @@
       }
 
 
-      let conversationId;
+      if (existing) {
 
+        window.location.href =
+          "chat.html?conversation_id=" +
+          existing.id;
 
-      if (existingConversation) {
-
-        conversationId =
-          existingConversation.id;
-
-      } else {
-
-        // Create new conversation
-
-        const {
-          data: newConversation,
-          error: createError
-        } =
-          await supabaseClient
-            .from("conversations")
-            .insert({
-              buyer_id: buyerId,
-              seller_id: user.id
-            })
-            .select("id")
-            .single();
-
-
-        if (createError) {
-
-          console.error(createError);
-
-          alert(
-            "❌ Could not create conversation: " +
-            createError.message
-          );
-
-          return;
-        }
-
-
-        conversationId =
-          newConversation.id;
-
+        return;
       }
 
 
-      // Open chat page
+      // CREATE NEW CONVERSATION
+
+      const {
+        data: conversation,
+        error: createError
+      } =
+        await supabaseClient
+          .from("conversations")
+          .insert({
+
+            buyer_id:
+              buyerId,
+
+            seller_id:
+              user.id
+
+          })
+          .select("id")
+          .single();
+
+
+      if (createError) {
+
+        alert(
+          "❌ Could not create conversation: " +
+          createError.message
+        );
+
+        return;
+      }
+
 
       window.location.href =
         "chat.html?conversation_id=" +
-        encodeURIComponent(
-          conversationId
-        );
+        conversation.id;
 
     }
 
@@ -431,13 +491,18 @@
       newStatus
     ) {
 
-      const { error } =
+      const {
+        error
+      } =
         await supabaseClient
           .from("orders")
           .update({
             status: newStatus
           })
-          .eq("id", orderId);
+          .eq(
+            "id",
+            orderId
+          );
 
 
       if (error) {
@@ -474,13 +539,11 @@
     }
 
 
-    // ==========================================
     // START
-    // ==========================================
 
     loadSellerOrders();
 
   </script>
 
 </body>
-</html>
+  </html>
