@@ -7,7 +7,6 @@
   <title>AREWA HUB - My Orders</title>
 
   <style>
-
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
@@ -46,7 +45,6 @@
       background: #0066ff;
       color: white;
     }
-
   </style>
 </head>
 
@@ -56,16 +54,13 @@
 
   <h2>My Orders</h2>
 
-  <p id="status">
-    Loading orders...
-  </p>
+  <p id="status">Loading orders...</p>
 
   <div id="orders"></div>
 
   <button onclick="goBack()">
     ← Back to Buyer Dashboard
   </button>
-
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -84,10 +79,6 @@
       );
 
 
-    // ==========================================
-    // LOAD ORDERS
-    // ==========================================
-
     async function loadOrders() {
 
       const status =
@@ -96,12 +87,10 @@
       const container =
         document.getElementById("orders");
 
-
       status.textContent =
         "Loading orders...";
 
 
-      // CURRENT USER
       const {
         data: { user },
         error: authError
@@ -118,28 +107,27 @@
       }
 
 
-      // GET ORDERS
       const {
         data: orders,
         error
       } =
         await supabaseClient
           .from("orders")
-.select(`
-  id,
-  buyer_id,
-  seller_id,
-  product_id,
-  quantity,
-  total_price,
-  delivery_address,
-  status,
-  payment_status,
-  created_at,
-  products (
-    name
-  )
-`)
+          .select(`
+            id,
+            buyer_id,
+            seller_id,
+            product_id,
+            quantity,
+            total_price,
+            delivery_address,
+            status,
+            payment_status,
+            created_at,
+            products (
+              name
+            )
+          `)
           .eq(
             "buyer_id",
             user.id
@@ -154,7 +142,7 @@
 
       if (error) {
 
-        console.log(error);
+        console.error(error);
 
         status.textContent =
           "❌ Failed to load orders: " +
@@ -180,24 +168,21 @@
         "Orders loaded successfully.";
 
 
-      // ==========================================
-      // EACH ORDER
-      // ==========================================
+      for (const order of orders) {
 
-      for (
-        const order of orders
-      ) {
+        let sellerName =
+          "Seller";
 
-        // GET SELLER PROFILE
+
+        // GET SELLER NAME
+
         const {
           data: seller,
           error: sellerError
         } =
           await supabaseClient
             .from("profiles")
-            .select(
-              "full_name"
-            )
+            .select("full_name")
             .eq(
               "user_id",
               order.seller_id
@@ -205,17 +190,29 @@
             .maybeSingle();
 
 
-        const sellerName =
-          seller?.full_name ||
-          "Seller";
+        if (sellerError) {
+
+          console.error(
+            "Seller error:",
+            sellerError
+          );
+
+        }
 
 
-        // CREATE ORDER CARD
+        if (
+          seller &&
+          seller.full_name
+        ) {
+
+          sellerName =
+            seller.full_name;
+
+        }
+
 
         const div =
-          document.createElement(
-            "div"
-          );
+          document.createElement("div");
 
         div.className =
           "order";
@@ -228,13 +225,13 @@
           </h3>
 
           <p>
-            👤 <strong>Seller:</strong>
-            ${sellerName}
+            🛍️ <strong>Product:</strong>
+            ${order.products?.name || "Product"}
           </p>
 
           <p>
-           🛍️ <strong>Product:</strong>
-${order.products?.name || "Product"}
+            👤 <strong>Seller:</strong>
+            ${sellerName}
           </p>
 
           <p>
@@ -273,18 +270,12 @@ ${order.products?.name || "Product"}
               ${order.payment_status}
             </p>
 
-
-            <!-- CHAT SELLER -->
-
             <button
               class="chat-button"
               onclick="chatWithSeller('${order.seller_id}')"
             >
               💬 Chat Seller
             </button>
-
-
-            <!-- PAYMENT -->
 
             ${
               order.payment_status === "unpaid"
@@ -298,9 +289,6 @@ ${order.products?.name || "Product"}
               `
               : ""
             }
-
-
-            <!-- CONFIRM RECEIVED -->
 
             ${
               order.status === "shipped"
@@ -325,9 +313,7 @@ ${order.products?.name || "Product"}
         `;
 
 
-        container.appendChild(
-          div
-        );
+        container.appendChild(div);
 
       }
 
@@ -349,10 +335,7 @@ ${order.products?.name || "Product"}
         await supabaseClient.auth.getUser();
 
 
-      if (
-        authError ||
-        !user
-      ) {
+      if (authError || !user) {
 
         alert(
           "Please login first."
@@ -361,8 +344,6 @@ ${order.products?.name || "Product"}
         return;
       }
 
-
-      // FIND EXISTING CONVERSATION
 
       const {
         data: existing,
@@ -384,10 +365,6 @@ ${order.products?.name || "Product"}
 
       if (findError) {
 
-        console.error(
-          findError
-        );
-
         alert(
           "❌ Could not find conversation: " +
           findError.message
@@ -396,8 +373,6 @@ ${order.products?.name || "Product"}
         return;
       }
 
-
-      // IF CONVERSATION EXISTS
 
       if (existing) {
 
@@ -408,8 +383,6 @@ ${order.products?.name || "Product"}
         return;
       }
 
-
-      // CREATE NEW CONVERSATION
 
       const {
         data: conversation,
@@ -432,10 +405,6 @@ ${order.products?.name || "Product"}
 
       if (createError) {
 
-        console.error(
-          createError
-        );
-
         alert(
           "❌ Could not create conversation: " +
           createError.message
@@ -444,8 +413,6 @@ ${order.products?.name || "Product"}
         return;
       }
 
-
-      // OPEN CHAT
 
       window.location.href =
         "chat.html?conversation_id=" +
@@ -500,7 +467,6 @@ ${order.products?.name || "Product"}
         "✅ Order received successfully!"
       );
 
-
       loadOrders();
 
     }
@@ -532,10 +498,6 @@ ${order.products?.name || "Product"}
     }
 
 
-    // ==========================================
-    // BACK
-    // ==========================================
-
     function goBack() {
 
       window.location.href =
@@ -543,10 +505,6 @@ ${order.products?.name || "Product"}
 
     }
 
-
-    // ==========================================
-    // START
-    // ==========================================
 
     loadOrders();
 
