@@ -3,155 +3,714 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>AREWA HUB - Services</title>
+
   <style>
-  .service-card {
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    padding: 16px;
-    margin: 12px 0;
-    background: #ffffff;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-  }
 
-  .service-card h3 {
-    margin-top: 0;
-  }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
+    }
 
-  .service-card button {
-    padding: 10px 16px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    background: #0b7a3b;
-    color: white;
-    font-weight: bold;
-  }
+    .container {
+      max-width: 750px;
+      margin: auto;
+      padding: 20px;
+    }
 
-  #serviceSearch {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0 20px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    box-sizing: border-box;
-  }
+    h1 {
+      color: #075e54;
+    }
+
+    .top-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 15px 0;
+    }
+
+    .top-buttons button {
+      border: none;
+      padding: 12px 16px;
+      border-radius: 8px;
+      background: #075e54;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #serviceSearch {
+      width: 100%;
+      padding: 14px;
+      margin: 15px 0;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+
+    .service-card {
+      background: white;
+      padding: 18px;
+      margin: 12px 0;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    }
+
+    .service-card h3 {
+      margin-top: 0;
+      color: #222;
+    }
+
+    .service-card p {
+      color: #555;
+    }
+
+    .service-card button {
+      padding: 11px 16px;
+      border: none;
+      border-radius: 8px;
+      background: #0b7a3b;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .no-result {
+      display: none;
+      padding: 20px;
+      background: white;
+      border-radius: 10px;
+      text-align: center;
+    }
+
   </style>
 </head>
 
 <body>
 
+<div class="container">
+
   <h1>🛠️ AREWA HUB</h1>
 
   <h2>Services Marketplace</h2>
 
-  <p>Find trusted service providers near you.</p>
-
-  <button>Find a Service</button>
-  <button>Offer a Service</button>
-
-  <h3>Popular Services</h3>
-<h2>🛠️ Find a Service</h2>
-
-<input type="text" id="serviceSearch" placeholder="Search for a service...">
-
-<h2>🛠️ Find a Service</h2>
+  <p>
+    Find trusted service providers near you.
+  </p>
 
 
+  <div class="top-buttons">
 
+    <button
+      onclick="window.location.href='providers.html'">
+      🔎 Find a Service
+    </button>
 
-  <p><div class="service-card">
-  <h3>🎨 Graphic Design</h3>
-  <p>Professional logo, flyer, poster and social media design.</p>
-  <button onclick="window.location.href='providers.html?service=Graphic%20Design'">
-  Find Provider
-  </button>
-  </div> 
-  <div class="service-card">
-  <h3>💻 Web Development</h3>
-  <p>Professional websites and web applications.</p>
-  <button>Find Provider</button>
+    <button
+      onclick="window.location.href='add-service.html'">
+      ➕ Offer a Service
+    </button>
+
   </div>
-  <div class="service-card">
-  <h3>📱 Phone Repair</h3>
-  <p>Phone repair, software setup and maintenance.</p>
-  <button>Find Provider</button>
+
+
+  <input
+    type="text"
+    id="serviceSearch"
+    placeholder="🔎 Search services e.g. AC, laundry, electrician..."
+  >
+
+
+  <h2>Popular Services</h2>
+
+
+  <div id="servicesList">
+
+
+    <div class="service-card">
+
+      <h3>❄️ Mai Gyaran AC</h3>
+
+      <p>
+        Installation, servicing, cleaning and repair
+        of air conditioners.
+      </p>
+
+      <button onclick="findProvider('AC Technician')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>🧺 Wanki da Guga</h3>
+
+      <p>
+        Professional clothes washing, ironing
+        and laundry services.
+      </p>
+
+      <button onclick="findProvider('Laundry')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>🧹 Cleaning Service</h3>
+
+      <p>
+        House, office, shop and commercial
+        cleaning services.
+      </p>
+
+      <button onclick="findProvider('Cleaning')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>🔌 Electrician</h3>
+
+      <p>
+        Electrical installation, wiring,
+        repair and maintenance.
+      </p>
+
+      <button onclick="findProvider('Electrician')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>🚰 Plumber</h3>
+
+      <p>
+        Plumbing, pipes, water systems
+        and repairs.
+      </p>
+
+      <button onclick="findProvider('Plumber')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>🔧 Mechanic</h3>
+
+      <p>
+        Car, motorcycle and vehicle
+        repair services.
+      </p>
+
+      <button onclick="findProvider('Mechanic')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>🛞 Vulcanizer</h3>
+
+      <p>
+        Tyre repair, replacement,
+        balancing and inflation.
+      </p>
+
+      <button onclick="findProvider('Vulcanizer')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>🚗 Car Wash</h3>
+
+      <p>
+        Professional vehicle washing
+        and cleaning.
+      </p>
+
+      <button onclick="findProvider('Car Wash')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>🪚 Carpenter</h3>
+
+      <p>
+        Furniture, doors, roofing
+        and custom woodwork.
+      </p>
+
+      <button onclick="findProvider('Carpenter')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>🎨 Painter</h3>
+
+      <p>
+        House, office and commercial
+        painting services.
+      </p>
+
+      <button onclick="findProvider('Painter')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>🧱 Bricklayer</h3>
+
+      <p>
+        Block laying, walls,
+        foundations and masonry.
+      </p>
+
+      <button onclick="findProvider('Bricklayer')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>🏗️ Aikin Gini</h3>
+
+      <p>
+        Building, construction
+        and renovation services.
+      </p>
+
+      <button onclick="findProvider('Construction')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>💈 Barber</h3>
+
+      <p>
+        Haircut, beard trimming
+        and grooming services.
+      </p>
+
+      <button onclick="findProvider('Barber')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>💄 Makeup Artist</h3>
+
+      <p>
+        Professional makeup
+        and beauty services.
+      </p>
+
+      <button onclick="findProvider('Makeup Artist')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>👗 Tailor</h3>
+
+      <p>
+        Hausa traditional clothing,
+        dresses and custom tailoring.
+      </p>
+
+      <button onclick="findProvider('Tailor')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>🍳 Cook / Catering</h3>
+
+      <p>
+        Food preparation, events,
+        catering and cooking services.
+      </p>
+
+      <button onclick="findProvider('Catering')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>🎂 Cake & Pastry</h3>
+
+      <p>
+        Cakes, snacks, pastries
+        and event orders.
+      </p>
+
+      <button onclick="findProvider('Cake')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>📸 Photography</h3>
+
+      <p>
+        Events, portraits,
+        weddings and business photography.
+      </p>
+
+      <button onclick="findProvider('Photography')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>🎥 Videography</h3>
+
+      <p>
+        Event videos, advertisements,
+        weddings and social media content.
+      </p>
+
+      <button onclick="findProvider('Videography')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>📱 Phone Repair</h3>
+
+      <p>
+        Phone repair, software setup
+        and maintenance.
+      </p>
+
+      <button onclick="findProvider('Phone Repair')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>💻 Computer Repair</h3>
+
+      <p>
+        Laptop, desktop, software
+        and computer troubleshooting.
+      </p>
+
+      <button onclick="findProvider('Computer Repair')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>🌐 Web Development</h3>
+
+      <p>
+        Websites, web applications
+        and online systems.
+      </p>
+
+      <button onclick="findProvider('Web Development')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>🎨 Graphic Design</h3>
+
+      <p>
+        Logos, flyers, posters,
+        branding and social media design.
+      </p>
+
+      <button onclick="findProvider('Graphic Design')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>📢 Digital Marketing</h3>
+
+      <p>
+        Social media marketing,
+        advertising and business promotion.
+      </p>
+
+      <button onclick="findProvider('Digital Marketing')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>🚚 Delivery</h3>
+
+      <p>
+        Local delivery, package
+        transportation and logistics.
+      </p>
+
+      <button onclick="findProvider('Delivery')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>🌳 Gardening</h3>
+
+      <p>
+        Garden maintenance,
+        landscaping and planting.
+      </p>
+
+      <button onclick="findProvider('Gardening')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>🐜 Pest Control</h3>
+
+      <p>
+        Pest inspection,
+        treatment and prevention.
+      </p>
+
+      <button onclick="findProvider('Pest Control')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>📚 Tutor</h3>
+
+      <p>
+        Academic tutoring,
+        lessons and educational support.
+      </p>
+
+      <button onclick="findProvider('Tutor')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>📝 Typing & Printing</h3>
+
+      <p>
+        Typing, printing, scanning,
+        photocopy and document services.
+      </p>
+
+      <button onclick="findProvider('Typing and Printing')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>💼 Business Consultant</h3>
+
+      <p>
+        Business advice, planning
+        and professional consulting.
+      </p>
+
+      <button onclick="findProvider('Business Consultant')">
+        Find Provider
+      </button>
+
+    </div>
+
+
+    <div class="service-card">
+
+      <h3>🤝 Business Partner</h3>
+
+      <p>
+        Find business partners,
+        collaboration and opportunities.
+      </p>
+
+      <button onclick="findProvider('Partner')">
+        Find Provider
+      </button>
+
+    </div>
+
+
   </div>
-  <div class="service-card">
-  <h3>🚚 Delivery</h3>
-  <p>Fast and reliable local delivery services.</p>
-  <button>Find Provider</button>
+
+
+  <div
+    id="noResult"
+    class="no-result">
+
+    ❌ No service found.
+
   </div>
-  <div class="service-card">
-  <h3>📸 Photography</h3>
-  <p>Professional photography for events, portraits and businesses.</p>
-  <button>Find Provider</button>
-  </div>
-<div class="service-card">
-  <h3>👔 Tailor</h3>
-  <p>Clothing, Hausa traditional wear and custom tailoring.</p>
-  <button>Find Provider</button>
+
+
 </div>
-<div class="service-card">
-  <h3>🔧 Mechanic</h3>
-  <p>Car, motorcycle and vehicle repair services.</p>
-  <button>Find Provider</button>
-</div>
-<div class="service-card">
-  <h3>🚰 Plumber</h3>
-  <p>Professional plumbing, pipe and water system services.</p>
-  <button>Find Provider</button>
-</div>
-<div class="service-card">
-  <h3>🎨 Painting</h3>
-  <p>House, office and commercial painting services.</p>
-  <button>Find Provider</button>
-</div>
-<div class="service-card">
-  <h3>💈 Aski / Barber</h3>
-  <p>Professional haircut, beard trimming and grooming.</p>
-  <button>Find Provider</button>
-</div>
-<div class="service-card">
-  <h3>🧱 Aikin Gini</h3>
-  <p>Building, construction and general building services.</p>
-  <button>Find Provider</button>
-</div>
-<div class="service-card">
-  <h3>🪚 Carpenter</h3>
-  <p>Furniture, doors, roofing and custom woodwork.</p>
-  <button>Find Provider</button>
-</div>
-<div class="service-card">
-  <h3>🧱 Bricklayer</h3>
-  <p>Block laying, wall construction and masonry services.</p>
-  <button>Find Provider</button>
-</div>
-<div class="service-card">
-  <h3>⚙️ Engineering</h3>
-  <p>Professional engineering and technical services.</p>
-  <button>Find Provider</button>
-</div>
-<div class="service-card">
-  <h3>🤝 Partner</h3>
-  <p>Find business partners and collaboration opportunities.</p>
-  <button>Find Provider</button>
-</div>
+
+
 <script>
-  const searchInput = document.getElementById("serviceSearch");
-  const services = document.querySelectorAll(".service-card");
 
-  searchInput.addEventListener("input", function () {
-    const searchText = this.value.toLowerCase();
+  function findProvider(service) {
 
-    services.forEach(function (service) {
-      if (service.textContent.toLowerCase().includes(searchText)) {
-        service.style.display = "block";
-      } else {
-        service.style.display = "none";
-      }
-    });
-  });
-    </script>
+    window.location.href =
+      "providers.html?service=" +
+      encodeURIComponent(service);
+
+  }
+
+
+  const searchInput =
+    document.getElementById("serviceSearch");
+
+  const serviceCards =
+    document.querySelectorAll(".service-card");
+
+  const noResult =
+    document.getElementById("noResult");
+
+
+  searchInput.addEventListener(
+    "input",
+    function() {
+
+      const searchText =
+        this.value
+          .toLowerCase()
+          .trim();
+
+
+      let found = 0;
+
+
+      serviceCards.forEach(
+        function(card) {
+
+          const text =
+            card.textContent.toLowerCase();
+
+
+          if (
+            text.includes(searchText)
+          ) {
+
+            card.style.display =
+              "block";
+
+            found++;
+
+          } else {
+
+            card.style.display =
+              "none";
+
+          }
+
+        }
+      );
+
+
+      noResult.style.display =
+        found === 0
+        ? "block"
+        : "none";
+
+    }
+  );
+
+</script>
+
 </body>
 </html>
