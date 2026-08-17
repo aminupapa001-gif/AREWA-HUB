@@ -495,11 +495,12 @@ document
 
 
       message.textContent =
-        "✅ Provider registration successful!";
+  "✅ Provider registration successful!";
 
-      document
-        .getElementById("providerForm")
-        .reset();
+setTimeout(function() {
+  window.location.href =
+    "service-dashboard.html";
+}, 1000);
 
     }
   );
