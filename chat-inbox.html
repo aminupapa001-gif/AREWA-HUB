@@ -28,6 +28,12 @@
 
     h1 {
       color: #075e54;
+      margin-bottom: 5px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 20px;
     }
 
     .conversation {
@@ -36,16 +42,28 @@
       margin: 12px 0;
       border-radius: 12px;
       box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-      cursor: pointer;
     }
 
     .conversation h3 {
       margin: 0 0 8px;
+      color: #222;
     }
 
     .conversation p {
-      margin: 5px 0;
+      margin: 6px 0;
       color: #555;
+      font-size: 14px;
+    }
+
+    .role {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 20px;
+      background: #e8f5e9;
+      color: #075e54;
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 8px;
     }
 
     .open-button {
@@ -56,15 +74,34 @@
       color: white;
       padding: 12px;
       border-radius: 8px;
-      margin-top: 10px;
+      margin-top: 12px;
       font-weight: bold;
+    }
+
+    .open-button:hover {
+      background: #064e46;
     }
 
     .empty {
       background: white;
-      padding: 20px;
+      padding: 25px 20px;
       border-radius: 12px;
       text-align: center;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+    }
+
+    .error {
+      background: #ffebee;
+      color: #b71c1c;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 15px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #666;
     }
 
   </style>
@@ -78,7 +115,9 @@
 
   <h1>💬 AREWA HUB</h1>
 
-  <h2>Messages</h2>
+  <div class="subtitle">
+    Messages
+  </div>
 
   <p id="status">
     Loading conversations...
@@ -118,6 +157,10 @@
 
   async function loadConversations() {
 
+    status.textContent =
+      "Loading conversations...";
+
+
     const {
       data: sessionData,
       error: sessionError
@@ -133,14 +176,31 @@
       status.textContent =
         "Please login first.";
 
-      return;
+      conversationList.innerHTML = `
+        <div class="error">
+          🔐 You must login before viewing messages.
+        </div>
+      `;
 
+      return;
     }
 
 
     const currentUser =
       sessionData.session.user;
 
+
+    /*
+      IMPORTANT:
+
+      A conversation belongs to either:
+
+      buyer_id
+      OR
+      seller_id
+
+      Therefore both are checked.
+    */
 
     const {
       data,
@@ -149,9 +209,8 @@
       await supabaseClient
         .from("conversations")
         .select("*")
-        .eq(
-          "seller_id",
-          currentUser.id
+        .or(
+          `buyer_id.eq.${currentUser.id},seller_id.eq.${currentUser.id}`
         )
         .order(
           "created_at",
@@ -163,14 +222,22 @@
 
     if (error) {
 
-      console.error(error);
+      console.error(
+        "Conversation error:",
+        error
+      );
 
       status.textContent =
-        "Failed to load messages: " +
-        error.message;
+        "";
+
+      conversationList.innerHTML = `
+        <div class="error">
+          ❌ Failed to load messages.<br><br>
+          ${error.message}
+        </div>
+      `;
 
       return;
-
     }
 
 
@@ -182,20 +249,24 @@
       data.length === 0
     ) {
 
-      status.textContent =
-        "";
+      status.textContent = "";
 
       conversationList.innerHTML = `
         <div class="empty">
-          <h3>📭 No Messages Yet</h3>
+
+          <h3>
+            📭 No Messages Yet
+          </h3>
+
           <p>
-            Buyers who contact you will appear here.
+            Your conversations with buyers,
+            sellers or providers will appear here.
           </p>
+
         </div>
       `;
 
       return;
-
     }
 
 
@@ -207,8 +278,41 @@
     data.forEach(
       function(conversation) {
 
+        /*
+          Find the other person
+        */
+
+        let otherUserId = null;
+
+        let otherRole = "";
+
+
+        if (
+          conversation.buyer_id ===
+          currentUser.id
+        ) {
+
+          otherUserId =
+            conversation.seller_id;
+
+          otherRole =
+            "Seller / Provider";
+
+        } else {
+
+          otherUserId =
+            conversation.buyer_id;
+
+          otherRole =
+            "Buyer";
+
+        }
+
+
         const div =
-          document.createElement("div");
+          document.createElement(
+            "div"
+          );
 
         div.className =
           "conversation";
@@ -216,14 +320,25 @@
 
         div.innerHTML = `
 
+          <span class="role">
+            ${otherRole}
+          </span>
+
           <h3>
-            👤 Buyer
+            👤 Conversation
           </h3>
 
           <p>
-            🕐 ${new Date(
-              conversation.created_at
-            ).toLocaleString()}
+            🆔 ${otherUserId || "Unknown user"}
+          </p>
+
+          <p>
+            🕐 ${conversation.created_at
+              ? new Date(
+                  conversation.created_at
+                ).toLocaleString()
+              : "No date"
+            }
           </p>
 
           <a
@@ -249,7 +364,21 @@
   }
 
 
+  /*
+    Load conversations
+  */
+
   loadConversations();
+
+
+  /*
+    Refresh inbox every 5 seconds
+  */
+
+  setInterval(
+    loadConversations,
+    5000
+  );
 
 </script>
 
