@@ -1,11 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
   <title>AREWA HUB - Product Details</title>
 
   <style>
+
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
@@ -32,19 +40,45 @@
       border: none;
       border-radius: 8px;
       cursor: pointer;
+      font-weight: bold;
     }
+
+    .chat-button {
+      background: #075e54;
+      color: white;
+    }
+
+    .cart-button {
+      background: #128c7e;
+      color: white;
+    }
+
+    .buy-button {
+      background: #0b7a3b;
+      color: white;
+    }
+
   </style>
+
 </head>
+
 
 <body>
 
   <h1>🛍️ AREWA HUB</h1>
 
+
   <div class="card">
 
-    <p id="status">Loading product...</p>
+    <p id="status">
+      Loading product...
+    </p>
 
-    <div id="product" style="display:none;">
+
+    <div
+      id="product"
+      style="display:none;"
+    >
 
       <div id="imageContainer"></div>
 
@@ -52,23 +86,43 @@
 
       <p id="description"></p>
 
+
       <p>
         <strong>Price:</strong>
         <span id="price"></span>
       </p>
 
+
       <p>
         📍 <span id="location"></span>
       </p>
+
 
       <p>
         📦 Stock:
         <span id="stock"></span>
       </p>
 
+
+      <!-- CHAT SELLER -->
+
+      <button
+        class="chat-button"
+        id="chatSellerButton"
+      >
+        💬 Chat with Seller
+      </button>
+
+
       <h3>Order</h3>
 
-      <label>Quantity</label><br>
+
+      <label>
+        Quantity
+      </label>
+
+      <br>
+
 
       <input
         type="number"
@@ -77,19 +131,30 @@
         min="1"
       >
 
+
       <br><br>
 
-      <button onclick="addToCart()">
+
+      <button
+        class="cart-button"
+        onclick="addToCart()"
+      >
         🛒 Add to Cart
       </button>
 
-      <button onclick="buyNow()">
+
+      <button
+        class="buy-button"
+        onclick="buyNow()"
+      >
         ⚡ Buy Now
       </button>
 
     </div>
 
+
     <br>
+
 
     <a href="products.html">
       ← Back to Products
@@ -97,264 +162,619 @@
 
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <script>
 
-    const SUPABASE_URL =
-      "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    const SUPABASE_KEY =
-      "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
 
-    const supabaseClient =
-      supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
+<script>
+
+
+const SUPABASE_URL =
+"https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
+
+const SUPABASE_KEY =
+"sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+
+const supabaseClient =
+supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+
+let currentProduct = null;
+
+
+
+/* ==========================
+   LOAD PRODUCT
+========================== */
+
+async function loadProduct() {
+
+  const status =
+    document.getElementById(
+      "status"
+    );
+
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+
+  const productId =
+    params.get("id");
+
+
+  if (!productId) {
+
+    status.textContent =
+      "❌ Product ID not found.";
+
+    return;
+
+  }
+
+
+  const {
+    data: product,
+    error
+  } =
+  await supabaseClient
+    .from("products")
+    .select("*")
+    .eq(
+      "id",
+      productId
+    )
+    .single();
+
+
+  if (
+    error ||
+    !product
+  ) {
+
+    console.log(error);
+
+    status.textContent =
+      "❌ Product not found.";
+
+    return;
+
+  }
+
+
+  currentProduct =
+    product;
+
+
+  status.style.display =
+    "none";
+
+
+  document.getElementById(
+    "product"
+  ).style.display =
+    "block";
+
+
+  document.getElementById(
+    "name"
+  ).textContent =
+    product.name;
+
+
+  document.getElementById(
+    "description"
+  ).textContent =
+    product.description || "";
+
+
+  document.getElementById(
+    "price"
+  ).textContent =
+    "₦" +
+    Number(
+      product.price
+    ).toLocaleString();
+
+
+  document.getElementById(
+    "location"
+  ).textContent =
+    product.location || "";
+
+
+  document.getElementById(
+    "stock"
+  ).textContent =
+    product.stock;
+
+
+  if (
+    product.image_url
+  ) {
+
+    document.getElementById(
+      "imageContainer"
+    ).innerHTML =
+      `
+      <img
+        src="${product.image_url}"
+        alt="${product.name}"
+      >
+      `;
+
+  }
+
+
+  /*
+    Activate Chat button
+  */
+
+  document
+    .getElementById(
+      "chatSellerButton"
+    )
+    .addEventListener(
+      "click",
+      chatWithSeller
+    );
+
+}
+
+
+
+/* ==========================
+   CHAT WITH SELLER
+========================== */
+
+async function chatWithSeller() {
+
+  if (!currentProduct) {
+
+    alert(
+      "Product is still loading."
+    );
+
+    return;
+
+  }
+
+
+  const {
+    data: {
+      user
+    },
+    error
+  } =
+  await supabaseClient.auth.getUser();
+
+
+  if (
+    error ||
+    !user
+  ) {
+
+    alert(
+      "Please login first."
+    );
+
+    window.location.href =
+      "login.html";
+
+    return;
+
+  }
+
+
+  const sellerId =
+    currentProduct.sellers_id;
+
+
+  if (!sellerId) {
+
+    alert(
+      "❌ This product has no seller ID."
+    );
+
+    return;
+
+  }
+
+
+  if (
+    sellerId === user.id
+  ) {
+
+    alert(
+      "You cannot chat with yourself."
+    );
+
+    return;
+
+  }
+
+
+  /*
+    Check if conversation already exists
+  */
+
+  const {
+    data: existing,
+    error: checkError
+  } =
+  await supabaseClient
+    .from("conversations")
+    .select("*")
+    .or(
+      `and(buyer_id.eq.${user.id},seller_id.eq.${sellerId}),and(buyer_id.eq.${sellerId},seller_id.eq.${user.id})`
+    )
+    .limit(1);
+
+
+  if (checkError) {
+
+    console.error(
+      checkError
+    );
+
+    alert(
+      "Failed to check conversation: " +
+      checkError.message
+    );
+
+    return;
+
+  }
+
+
+  let conversationId;
+
+
+  if (
+    existing &&
+    existing.length > 0
+  ) {
+
+    conversationId =
+      existing[0].id;
+
+  } else {
+
+    /*
+      Create new conversation
+    */
+
+    const {
+      data: newConversation,
+      error: createError
+    } =
+    await supabaseClient
+      .from("conversations")
+      .insert({
+
+        buyer_id:
+          user.id,
+
+        seller_id:
+          sellerId
+
+      })
+      .select()
+      .single();
+
+
+    if (createError) {
+
+      console.error(
+        createError
       );
-
-    let currentProduct = null;
-
-
-    async function loadProduct() {
-
-      const status =
-        document.getElementById("status");
-
-      const params =
-        new URLSearchParams(
-          window.location.search
-        );
-
-      const productId =
-        params.get("id");
-
-      if (!productId) {
-
-        status.textContent =
-          "❌ Product ID not found.";
-
-        return;
-      }
-
-      const {
-        data: product,
-        error
-      } = await supabaseClient
-        .from("products")
-        .select("*")
-        .eq("id", productId)
-        .single();
-
-      if (error || !product) {
-
-        console.log(error);
-
-        status.textContent =
-          "❌ Product not found.";
-
-        return;
-      }
-
-      currentProduct = product;
-
-      status.style.display = "none";
-
-      document.getElementById("product").style.display =
-        "block";
-
-      document.getElementById("name").textContent =
-        product.name;
-
-      document.getElementById("description").textContent =
-        product.description;
-
-      document.getElementById("price").textContent =
-        "₦" +
-        Number(product.price).toLocaleString();
-
-      document.getElementById("location").textContent =
-        product.location;
-
-      document.getElementById("stock").textContent =
-        product.stock;
-
-      if (product.image_url) {
-
-        document.getElementById("imageContainer").innerHTML =
-          `<img src="${product.image_url}" alt="${product.name}">`;
-
-      }
-    }
-
-
-    async function addToCart() {
-
-      if (!currentProduct) {
-
-        alert("Product is still loading.");
-
-        return;
-      }
-
-      const {
-        data: { user },
-        error: authError
-      } = await supabaseClient.auth.getUser();
-
-      if (authError || !user) {
-
-        alert("Please login as a buyer first.");
-
-        window.location.href =
-          "buyer_login.html";
-
-        return;
-      }
-
-      const quantity =
-        Number(
-          document.getElementById("quantity").value
-        );
-
-      if (quantity < 1) {
-
-        alert("Quantity must be at least 1.");
-
-        return;
-      }
-
-      if (quantity > currentProduct.stock) {
-
-        alert("Not enough stock available.");
-
-        return;
-      }
-
-
-      const {
-        data: existingCart,
-        error: cartCheckError
-      } = await supabaseClient
-        .from("cart")
-        .select("id, quantity")
-        .eq("buyer_id", user.id)
-        .eq("product_id", currentProduct.id)
-        .maybeSingle();
-
-
-      if (cartCheckError) {
-
-        alert(
-          "Cart error: " +
-          cartCheckError.message
-        );
-
-        return;
-      }
-
-
-      if (existingCart) {
-
-        const newQuantity =
-          Number(existingCart.quantity) +
-          quantity;
-
-        if (newQuantity > currentProduct.stock) {
-
-          alert("Not enough stock available.");
-
-          return;
-        }
-
-        const {
-          error: updateError
-        } = await supabaseClient
-          .from("cart")
-          .update({
-            quantity: newQuantity
-          })
-          .eq("id", existingCart.id);
-
-        if (updateError) {
-
-          alert(
-            "Failed to update cart: " +
-            updateError.message
-          );
-
-          return;
-        }
-
-      } else {
-
-        const {
-          error: insertError
-        } = await supabaseClient
-          .from("cart")
-          .insert({
-            buyer_id: user.id,
-            product_id: currentProduct.id,
-            quantity: quantity
-          });
-
-        if (insertError) {
-
-          alert(
-            "Failed to add to cart: " +
-            insertError.message
-          );
-
-          return;
-        }
-      }
-
 
       alert(
-        "🛒 Product added to cart successfully!"
+        "Failed to create conversation: " +
+        createError.message
       );
+
+      return;
 
     }
 
 
-    async function buyNow() {
+    conversationId =
+      newConversation.id;
 
-      if (!currentProduct) {
+  }
 
-        alert("Product is still loading.");
 
-        return;
-      }
+  /*
+    Open chat
+  */
 
-      const quantity =
-        Number(
-          document.getElementById("quantity").value
-        );
+  window.location.href =
+    "chat.html?conversation_id=" +
+    encodeURIComponent(
+      conversationId
+    );
 
-      if (quantity < 1) {
+}
 
-        alert("Quantity must be at least 1.");
 
-        return;
-      }
 
-      if (quantity > currentProduct.stock) {
+/* ==========================
+   ADD TO CART
+========================== */
 
-        alert("Not enough stock available.");
+async function addToCart() {
 
-        return;
-      }
+  if (!currentProduct) {
+
+    alert(
+      "Product is still loading."
+    );
+
+    return;
+
+  }
+
+
+  const {
+    data: {
+      user
+    },
+    error: authError
+  } =
+  await supabaseClient.auth.getUser();
+
+
+  if (
+    authError ||
+    !user
+  ) {
+
+    alert(
+      "Please login first."
+    );
+
+    window.location.href =
+      "buyer_login.html";
+
+    return;
+
+  }
+
+
+  const quantity =
+    Number(
+      document.getElementById(
+        "quantity"
+      ).value
+    );
+
+
+  if (
+    quantity < 1
+  ) {
+
+    alert(
+      "Quantity must be at least 1."
+    );
+
+    return;
+
+  }
+
+
+  if (
+    quantity >
+    currentProduct.stock
+  ) {
+
+    alert(
+      "Not enough stock available."
+    );
+
+    return;
+
+  }
+
+
+  const {
+    data: existingCart,
+    error: cartCheckError
+  } =
+  await supabaseClient
+    .from("cart")
+    .select(
+      "id, quantity"
+    )
+    .eq(
+      "buyer_id",
+      user.id
+    )
+    .eq(
+      "product_id",
+      currentProduct.id
+    )
+    .maybeSingle();
+
+
+  if (cartCheckError) {
+
+    alert(
+      "Cart error: " +
+      cartCheckError.message
+    );
+
+    return;
+
+  }
+
+
+  if (existingCart) {
+
+    const newQuantity =
+      Number(
+        existingCart.quantity
+      ) +
+      quantity;
+
+
+    if (
+      newQuantity >
+      currentProduct.stock
+    ) {
 
       alert(
-        "⚡ Buy Now selected. Checkout system will be connected next."
+        "Not enough stock available."
       );
+
+      return;
 
     }
 
 
-    loadProduct();
+    const {
+      error
+    } =
+    await supabaseClient
+      .from("cart")
+      .update({
 
-  </script>
+        quantity:
+          newQuantity
+
+      })
+      .eq(
+        "id",
+        existingCart.id
+      );
+
+
+    if (error) {
+
+      alert(
+        "Failed to update cart: " +
+        error.message
+      );
+
+      return;
+
+    }
+
+  } else {
+
+    const {
+      error
+    } =
+    await supabaseClient
+      .from("cart")
+      .insert({
+
+        buyer_id:
+          user.id,
+
+        product_id:
+          currentProduct.id,
+
+        quantity:
+          quantity
+
+      });
+
+
+    if (error) {
+
+      alert(
+        "Failed to add to cart: " +
+        error.message
+      );
+
+      return;
+
+    }
+
+  }
+
+
+  alert(
+    "🛒 Product added to cart successfully!"
+  );
+
+}
+
+
+
+/* ==========================
+   BUY NOW
+========================== */
+
+async function buyNow() {
+
+  if (!currentProduct) {
+
+    alert(
+      "Product is still loading."
+    );
+
+    return;
+
+  }
+
+
+  const quantity =
+    Number(
+      document.getElementById(
+        "quantity"
+      ).value
+    );
+
+
+  if (
+    quantity < 1
+  ) {
+
+    alert(
+      "Quantity must be at least 1."
+    );
+
+    return;
+
+  }
+
+
+  if (
+    quantity >
+    currentProduct.stock
+  ) {
+
+    alert(
+      "Not enough stock available."
+    );
+
+    return;
+
+  }
+
+
+  alert(
+    "⚡ Buy Now selected. Checkout system will be connected next."
+  );
+
+}
+
+
+
+loadProduct();
+
+</script>
 
 </body>
+
   </html>
