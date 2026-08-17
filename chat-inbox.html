@@ -28,12 +28,6 @@
 
     h1 {
       color: #075e54;
-      margin-bottom: 5px;
-    }
-
-    .subtitle {
-      color: #666;
-      margin-bottom: 20px;
     }
 
     .conversation {
@@ -46,24 +40,12 @@
 
     .conversation h3 {
       margin: 0 0 8px;
-      color: #222;
     }
 
     .conversation p {
       margin: 6px 0;
-      color: #555;
+      color: #666;
       font-size: 14px;
-    }
-
-    .role {
-      display: inline-block;
-      padding: 5px 9px;
-      border-radius: 20px;
-      background: #e8f5e9;
-      color: #075e54;
-      font-size: 12px;
-      font-weight: bold;
-      margin-bottom: 8px;
     }
 
     .open-button {
@@ -78,16 +60,11 @@
       font-weight: bold;
     }
 
-    .open-button:hover {
-      background: #064e46;
-    }
-
     .empty {
       background: white;
-      padding: 25px 20px;
+      padding: 25px;
       border-radius: 12px;
       text-align: center;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.06);
     }
 
     .error {
@@ -95,13 +72,6 @@
       color: #b71c1c;
       padding: 15px;
       border-radius: 10px;
-      margin-top: 15px;
-    }
-
-    .loading {
-      text-align: center;
-      padding: 20px;
-      color: #666;
     }
 
   </style>
@@ -115,9 +85,7 @@
 
   <h1>💬 AREWA HUB</h1>
 
-  <div class="subtitle">
-    Messages
-  </div>
+  <h2>Messages</h2>
 
   <p id="status">
     Loading conversations...
@@ -132,253 +100,196 @@
 
 <script>
 
-  const SUPABASE_URL =
-    "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+const SUPABASE_URL =
+"https://ffjofoeiwaiyxecbeuwt.supabase.co";
 
-  const SUPABASE_KEY =
-    "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
-
-
-  const supabaseClient =
-    supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
-    );
+const SUPABASE_KEY =
+"sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
 
 
-  const status =
-    document.getElementById("status");
-
-  const conversationList =
-    document.getElementById(
-      "conversationList"
-    );
+const supabaseClient =
+supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
 
 
-  async function loadConversations() {
+const status =
+document.getElementById(
+  "status"
+);
 
-    status.textContent =
-      "Loading conversations...";
-
-
-    const {
-      data: sessionData,
-      error: sessionError
-    } =
-      await supabaseClient.auth.getSession();
+const list =
+document.getElementById(
+  "conversationList"
+);
 
 
-    if (
-      sessionError ||
-      !sessionData.session
-    ) {
+async function loadConversations() {
 
-      status.textContent =
-        "Please login first.";
-
-      conversationList.innerHTML = `
-        <div class="error">
-          🔐 You must login before viewing messages.
-        </div>
-      `;
-
-      return;
-    }
+  const {
+    data: sessionData,
+    error: sessionError
+  } =
+  await supabaseClient.auth.getSession();
 
 
-    const currentUser =
-      sessionData.session.user;
-
-
-    /*
-      IMPORTANT:
-
-      A conversation belongs to either:
-
-      buyer_id
-      OR
-      seller_id
-
-      Therefore both are checked.
-    */
-
-    const {
-      data,
-      error
-    } =
-      await supabaseClient
-        .from("conversations")
-        .select("*")
-        .or(
-          `buyer_id.eq.${currentUser.id},seller_id.eq.${currentUser.id}`
-        )
-        .order(
-          "created_at",
-          {
-            ascending: false
-          }
-        );
-
-
-    if (error) {
-
-      console.error(
-        "Conversation error:",
-        error
-      );
-
-      status.textContent =
-        "";
-
-      conversationList.innerHTML = `
-        <div class="error">
-          ❌ Failed to load messages.<br><br>
-          ${error.message}
-        </div>
-      `;
-
-      return;
-    }
-
-
-    conversationList.innerHTML = "";
-
-
-    if (
-      !data ||
-      data.length === 0
-    ) {
-
-      status.textContent = "";
-
-      conversationList.innerHTML = `
-        <div class="empty">
-
-          <h3>
-            📭 No Messages Yet
-          </h3>
-
-          <p>
-            Your conversations with buyers,
-            sellers or providers will appear here.
-          </p>
-
-        </div>
-      `;
-
-      return;
-    }
-
+  if (
+    sessionError ||
+    !sessionData.session
+  ) {
 
     status.textContent =
-      data.length +
-      " conversation(s)";
+      "Please login first.";
 
-
-    data.forEach(
-      function(conversation) {
-
-        /*
-          Find the other person
-        */
-
-        let otherUserId = null;
-
-        let otherRole = "";
-
-
-        if (
-          conversation.buyer_id ===
-          currentUser.id
-        ) {
-
-          otherUserId =
-            conversation.seller_id;
-
-          otherRole =
-            "Seller / Provider";
-
-        } else {
-
-          otherUserId =
-            conversation.buyer_id;
-
-          otherRole =
-            "Buyer";
-
-        }
-
-
-        const div =
-          document.createElement(
-            "div"
-          );
-
-        div.className =
-          "conversation";
-
-
-        div.innerHTML = `
-
-          <span class="role">
-            ${otherRole}
-          </span>
-
-          <h3>
-            👤 Conversation
-          </h3>
-
-          <p>
-            🆔 ${otherUserId || "Unknown user"}
-          </p>
-
-          <p>
-            🕐 ${conversation.created_at
-              ? new Date(
-                  conversation.created_at
-                ).toLocaleString()
-              : "No date"
-            }
-          </p>
-
-          <a
-            class="open-button"
-            href="chat.html?conversation_id=${
-              conversation.id
-            }">
-
-            💬 Open Chat
-
-          </a>
-
-        `;
-
-
-        conversationList.appendChild(
-          div
-        );
-
-      }
-    );
+    return;
 
   }
 
 
-  /*
-    Load conversations
-  */
-
-  loadConversations();
+  const currentUser =
+    sessionData.session.user;
 
 
-  /*
-    Refresh inbox every 5 seconds
-  */
+  const {
+    data,
+    error
+  } =
+  await supabaseClient
+    .from("conversations")
+    .select("*")
+    .or(
+      `buyer_id.eq.${currentUser.id},seller_id.eq.${currentUser.id}`
+    )
+    .order(
+      "created_at",
+      {
+        ascending: false
+      }
+    );
 
-  setInterval(
-    loadConversations,
-    5000
+
+  if (error) {
+
+    console.error(error);
+
+    status.textContent = "";
+
+    list.innerHTML = `
+      <div class="error">
+        ❌ ${error.message}
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  list.innerHTML = "";
+
+
+  if (
+    !data ||
+    data.length === 0
+  ) {
+
+    status.textContent = "";
+
+    list.innerHTML = `
+      <div class="empty">
+
+        <h3>
+          📭 No Messages Yet
+        </h3>
+
+        <p>
+          Your conversations will appear here.
+        </p>
+
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  status.textContent =
+    data.length +
+    " conversation(s)";
+
+
+  data.forEach(
+    conversation => {
+
+      const otherUser =
+        conversation.buyer_id ===
+        currentUser.id
+
+          ? conversation.seller_id
+
+          : conversation.buyer_id;
+
+
+      const div =
+        document.createElement(
+          "div"
+        );
+
+
+      div.className =
+        "conversation";
+
+
+      div.innerHTML = `
+
+        <h3>
+          💬 AREWA HUB User
+        </h3>
+
+        <p>
+          Conversation ID:
+          ${conversation.id}
+        </p>
+
+        <p>
+          🕐 ${
+            new Date(
+              conversation.created_at
+            ).toLocaleString()
+          }
+        </p>
+
+        <a
+          class="open-button"
+          href="chat.html?conversation_id=${
+            conversation.id
+          }"
+        >
+          💬 Open Chat
+        </a>
+
+      `;
+
+
+      list.appendChild(
+        div
+      );
+
+    }
   );
+
+}
+
+
+loadConversations();
+
+
+setInterval(
+  loadConversations,
+  5000
+);
 
 </script>
 
