@@ -1,12 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <title>AREWA HUB - Seller Center</title>
 
   <style>
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -31,6 +38,7 @@
       background: #075e54;
       color: white;
       font-weight: bold;
+      cursor: pointer;
     }
 
     .chat-box {
@@ -55,8 +63,17 @@
     #status {
       color: #666;
     }
+
+    .empty {
+      text-align: center;
+      padding: 20px;
+      color: #777;
+    }
+
   </style>
+
 </head>
+
 
 <body>
 
@@ -70,21 +87,48 @@
     Sell your products to buyers across Northern Nigeria.
   </p>
 
-  <button onclick="window.location.href='add-product.html'">
+
+  <button
+    onclick="
+      window.location.href='add-product.html'
+    "
+  >
     ➕ Add Product
   </button>
 
-  <button onclick="window.location.href='seller-orders.html'">
+
+  <button
+    onclick="
+      window.location.href='seller-orders.html'
+    "
+  >
     📦 View Orders
   </button>
 
-  <button onclick="window.location.href='seller-wallet.html'">
+
+  <button
+    onclick="
+      window.location.href='seller-wallet.html'
+    "
+  >
     💰 My Wallet
   </button>
 
+
+  <button
+    onclick="
+      window.location.href='chat-inbox.html'
+    "
+  >
+    💬 All Messages
+  </button>
+
+
   <div class="chat-box">
 
-    <h2>💬 Buyer Messages</h2>
+    <h2>
+      💬 Messages
+    </h2>
 
     <p id="status">
       Checking messages...
@@ -99,181 +143,207 @@
 
 <script type="module">
 
-  import {
-    createClient
-  } from
-  "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+import {
+  createClient
+}
+from
+"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
 
-  const SUPABASE_URL =
-    "https://ffjofoeiwaiyxecbeuwt.supabase.co";
-
-  const SUPABASE_ANON_KEY =
-    "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+const SUPABASE_URL =
+"https://ffjofoeiwaiyxecbeuwt.supabase.co";
 
 
-  const supabase =
-    createClient(
-      SUPABASE_URL,
-      SUPABASE_ANON_KEY
-    );
+const SUPABASE_ANON_KEY =
+"sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
 
 
-  const status =
-    document.getElementById("status");
-
-  const conversationsBox =
-    document.getElementById("conversations");
-
-
-  async function loadConversations() {
-
-    try {
-
-      status.textContent =
-        "Checking messages...";
+const supabase =
+createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
 
 
-      const {
-        data: sessionData,
-        error: sessionError
-      } =
-      await supabase.auth.getSession();
+const status =
+document.getElementById(
+  "status"
+);
 
 
-      if (
-        sessionError ||
-        !sessionData.session
-      ) {
-
-        status.textContent =
-          "❌ Please login as seller first.";
-
-        return;
-      }
+const conversationsBox =
+document.getElementById(
+  "conversations"
+);
 
 
-      const sellerId =
-        sessionData.session.user.id;
+/* =========================================
+   LOAD ALL USER CONVERSATIONS
+========================================= */
+
+async function loadConversations() {
+
+  try {
+
+    status.textContent =
+      "Checking messages...";
 
 
-      status.textContent =
-        "Loading buyer messages...";
+    const {
+      data: sessionData,
+      error: sessionError
+    } =
+    await supabase.auth.getSession();
 
 
-      const {
-        data: conversations,
-        error: conversationError
-      } =
-      await supabase
-        .from("conversations")
-        .select(
-          "id, buyer_id, seller_id, created_at"
-        )
-        .eq(
-          "seller_id",
-          sellerId
-        )
-        .order(
-          "created_at",
-          {
-            ascending: false
-          }
-        );
-
-
-      if (conversationError) {
-
-        console.error(
-          conversationError
-        );
-
-        status.textContent =
-          "❌ Failed to load chats: " +
-          conversationError.message;
-
-        return;
-      }
-
-
-      conversationsBox.innerHTML = "";
-
-
-      if (
-        !conversations ||
-        conversations.length === 0
-      ) {
-
-        status.textContent =
-          "No buyer messages yet.";
-
-        return;
-      }
-
+    if (
+      sessionError ||
+      !sessionData.session
+    ) {
 
       status.textContent =
-        conversations.length +
-        " conversation(s)";
+        "❌ Please login first.";
+
+      return;
+
+    }
 
 
-      for (
-        const conversation of conversations
-      ) {
-
-        let buyerName =
-          "Buyer";
+    const currentUser =
+      sessionData.session.user;
 
 
-        const {
-          data: buyerProfile,
-          error: buyerError
-        } =
-        await supabase
-          .from("profiles")
-          .select(
-            "full_name"
-          )
-          .eq(
-            "user_id",
-            conversation.buyer_id
-          )
-          .maybeSingle();
+    status.textContent =
+      "Loading messages...";
 
 
-        if (
-          !buyerError &&
-          buyerProfile &&
-          buyerProfile.full_name
-        ) {
-
-          buyerName =
-            buyerProfile.full_name;
-
+    const {
+      data: conversations,
+      error
+    } =
+    await supabase
+      .from("conversations")
+      .select(
+        "id, buyer_id, seller_id, created_at"
+      )
+      .or(
+        `buyer_id.eq.${currentUser.id},seller_id.eq.${currentUser.id}`
+      )
+      .order(
+        "created_at",
+        {
+          ascending: false
         }
+      );
+
+
+    if (error) {
+
+      console.error(error);
+
+      status.textContent =
+        "❌ Failed to load chats: " +
+        error.message;
+
+      return;
+
+    }
+
+
+    conversationsBox.innerHTML =
+      "";
+
+
+    if (
+      !conversations ||
+      conversations.length === 0
+    ) {
+
+      status.textContent =
+        "";
+
+
+      conversationsBox.innerHTML = `
+        <div class="empty">
+
+          📭 No messages yet.
+
+          <br><br>
+
+          When you chat with a buyer,
+          seller or provider,
+          the conversation will appear here.
+
+        </div>
+      `;
+
+      return;
+
+    }
+
+
+    status.textContent =
+      conversations.length +
+      " conversation(s)";
+
+
+    conversations.forEach(
+      function(conversation) {
+
+
+        /*
+          Find the other participant
+        */
+
+        const otherUserId =
+          conversation.buyer_id ===
+          currentUser.id
+
+            ? conversation.seller_id
+
+            : conversation.buyer_id;
 
 
         const box =
-          document.createElement("div");
+          document.createElement(
+            "div"
+          );
+
 
         box.className =
           "conversation";
 
 
         box.innerHTML = `
-          <strong>💬 Buyer conversation</strong>
+
+          <strong>
+            💬 AREWA HUB Conversation
+          </strong>
 
           <p>
-            👤 <strong>Buyer:</strong>
-            ${buyerName}
+            👤 User ID:
+            ${otherUserId}
           </p>
+
+          <p>
+            🕐 ${
+              new Date(
+                conversation.created_at
+              ).toLocaleString()
+            }
+          </p>
+
         `;
 
 
         const button =
-          document.createElement("button");
+          document.createElement(
+            "button"
+          );
+
 
         button.textContent =
-          "Open Chat";
+          "💬 Open Chat";
 
 
         button.onclick =
@@ -281,33 +351,53 @@
 
             window.location.href =
               "chat.html?conversation_id=" +
-              conversation.id;
+              encodeURIComponent(
+                conversation.id
+              );
 
           };
 
 
-        box.appendChild(button);
+        box.appendChild(
+          button
+        );
 
-        conversationsBox.appendChild(box);
+
+        conversationsBox.appendChild(
+          box
+        );
 
       }
+    );
 
-    } catch (error) {
 
-      console.error(error);
+  } catch (error) {
 
-      status.textContent =
-        "❌ Unexpected error: " +
-        error.message;
+    console.error(error);
 
-    }
+    status.textContent =
+      "❌ Unexpected error: " +
+      error.message;
 
   }
 
+}
 
-  loadConversations();
+
+loadConversations();
+
+
+/*
+  Refresh messages
+*/
+
+setInterval(
+  loadConversations,
+  5000
+);
 
 </script>
 
 </body>
+
 </html>
