@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-
   <meta charset="UTF-8">
 
   <meta
@@ -13,7 +12,6 @@
   <title>AREWA HUB - Provider Registration</title>
 
   <style>
-
     body {
       margin: 0;
       padding: 20px;
@@ -52,10 +50,6 @@
       margin-bottom: 15px;
     }
 
-    select {
-      background: white;
-    }
-
     button {
       width: 100%;
       padding: 14px;
@@ -76,11 +70,8 @@
       margin-top: 15px;
       font-weight: bold;
     }
-
   </style>
-
 </head>
-
 
 <body>
 
@@ -95,9 +86,7 @@
     across Northern Nigeria.
   </p>
 
-
   <form id="providerForm">
-
 
     <label>Email</label>
 
@@ -107,16 +96,14 @@
       required
     >
 
-
     <label>Password</label>
 
     <input
       type="password"
       id="password"
       minlength="6"
-      required
+      placeholder="Only needed for new account"
     >
-
 
     <label>Full Name</label>
 
@@ -127,7 +114,6 @@
       required
     >
 
-
     <label>Phone</label>
 
     <input
@@ -136,7 +122,6 @@
       placeholder="e.g. 07012345678"
       required
     >
-
 
     <label>WhatsApp Number</label>
 
@@ -147,144 +132,47 @@
       required
     >
 
-
     <label>Service</label>
 
-    <select
-      id="service"
-      required
-    >
+    <select id="service" required>
 
       <option value="">
         -- Select Your Service --
       </option>
 
-      <option value="AC Technician">
-        ❄️ AC Technician
-      </option>
-
-      <option value="Laundry">
-        🧺 Wanki da Guga / Laundry
-      </option>
-
-      <option value="Cleaning">
-        🧹 Cleaning Service
-      </option>
-
-      <option value="Electrician">
-        🔌 Electrician
-      </option>
-
-      <option value="Plumber">
-        🚰 Plumber
-      </option>
-
-      <option value="Mechanic">
-        🔧 Mechanic
-      </option>
-
-      <option value="Vulcanizer">
-        🛞 Vulcanizer
-      </option>
-
-      <option value="Car Wash">
-        🚗 Car Wash
-      </option>
-
-      <option value="Carpenter">
-        🪚 Carpenter
-      </option>
-
-      <option value="Painter">
-        🎨 Painter
-      </option>
-
-      <option value="Bricklayer">
-        🧱 Bricklayer
-      </option>
-
-      <option value="Construction">
-        🏗️ Aikin Gini / Construction
-      </option>
-
-      <option value="Barber">
-        💈 Barber
-      </option>
-
-      <option value="Makeup Artist">
-        💄 Makeup Artist
-      </option>
-
-      <option value="Tailor">
-        👗 Tailor
-      </option>
-
-      <option value="Catering">
-        🍳 Cook / Catering
-      </option>
-
-      <option value="Cake">
-        🎂 Cake & Pastry
-      </option>
-
-      <option value="Photography">
-        📸 Photography
-      </option>
-
-      <option value="Videography">
-        🎥 Videography
-      </option>
-
-      <option value="Phone Repair">
-        📱 Phone Repair
-      </option>
-
-      <option value="Computer Repair">
-        💻 Computer Repair
-      </option>
-
-      <option value="Web Development">
-        🌐 Web Development
-      </option>
-
-      <option value="Graphic Design">
-        🎨 Graphic Design
-      </option>
-
-      <option value="Digital Marketing">
-        📢 Digital Marketing
-      </option>
-
-      <option value="Delivery">
-        🚚 Delivery
-      </option>
-
-      <option value="Gardening">
-        🌳 Gardening
-      </option>
-
-      <option value="Pest Control">
-        🐜 Pest Control
-      </option>
-
-      <option value="Tutor">
-        📚 Tutor
-      </option>
-
-      <option value="Typing and Printing">
-        📝 Typing & Printing
-      </option>
-
-      <option value="Business Consultant">
-        💼 Business Consultant
-      </option>
-
-      <option value="Partner">
-        🤝 Business Partner
-      </option>
+      <option value="AC Technician">❄️ AC Technician</option>
+      <option value="Laundry">🧺 Wanki da Guga / Laundry</option>
+      <option value="Cleaning">🧹 Cleaning Service</option>
+      <option value="Electrician">🔌 Electrician</option>
+      <option value="Plumber">🚰 Plumber</option>
+      <option value="Mechanic">🔧 Mechanic</option>
+      <option value="Vulcanizer">🛞 Vulcanizer</option>
+      <option value="Car Wash">🚗 Car Wash</option>
+      <option value="Carpenter">🪚 Carpenter</option>
+      <option value="Painter">🎨 Painter</option>
+      <option value="Bricklayer">🧱 Bricklayer</option>
+      <option value="Construction">🏗️ Aikin Gini / Construction</option>
+      <option value="Barber">💈 Barber</option>
+      <option value="Makeup Artist">💄 Makeup Artist</option>
+      <option value="Tailor">👗 Tailor</option>
+      <option value="Catering">🍳 Cook / Catering</option>
+      <option value="Cake">🎂 Cake & Pastry</option>
+      <option value="Photography">📸 Photography</option>
+      <option value="Videography">🎥 Videography</option>
+      <option value="Phone Repair">📱 Phone Repair</option>
+      <option value="Computer Repair">💻 Computer Repair</option>
+      <option value="Web Development">🌐 Web Development</option>
+      <option value="Graphic Design">🎨 Graphic Design</option>
+      <option value="Digital Marketing">📢 Digital Marketing</option>
+      <option value="Delivery">🚚 Delivery</option>
+      <option value="Gardening">🌳 Gardening</option>
+      <option value="Pest Control">🐜 Pest Control</option>
+      <option value="Tutor">📚 Tutor</option>
+      <option value="Typing and Printing">📝 Typing & Printing</option>
+      <option value="Business Consultant">💼 Business Consultant</option>
+      <option value="Partner">🤝 Business Partner</option>
 
     </select>
-
 
     <label>Location</label>
 
@@ -295,7 +183,6 @@
       required
     >
 
-
     <label>About You</label>
 
     <textarea
@@ -304,112 +191,142 @@
       placeholder="Tell buyers about your experience and services..."
     ></textarea>
 
-
     <button type="submit">
       Register as Provider
     </button>
 
-
   </form>
-
 
   <p id="message"></p>
 
-
 </div>
-
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-
 <script>
 
-  const SUPABASE_URL =
-    "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+const SUPABASE_URL =
+  "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+const supabaseClient =
+  supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
 
 
-  const SUPABASE_KEY =
-    "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+document
+  .getElementById("providerForm")
+  .addEventListener(
+    "submit",
+    async function(event) {
+
+      event.preventDefault();
+
+      const message =
+        document.getElementById("message");
+
+      message.textContent =
+        "Checking your account...";
 
 
-  const supabaseClient =
-    supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
-    );
+      const email =
+        document
+          .getElementById("email")
+          .value
+          .trim();
+
+      const password =
+        document
+          .getElementById("password")
+          .value;
+
+      const full_name =
+        document
+          .getElementById("full_name")
+          .value
+          .trim();
+
+      const phone =
+        document
+          .getElementById("phone")
+          .value
+          .trim();
+
+      const whatsapp =
+        document
+          .getElementById("whatsapp")
+          .value
+          .trim();
+
+      const service =
+        document
+          .getElementById("service")
+          .value;
+
+      const location =
+        document
+          .getElementById("location")
+          .value
+          .trim();
+
+      const bio =
+        document
+          .getElementById("bio")
+          .value
+          .trim();
 
 
-  document
-    .getElementById("providerForm")
-    .addEventListener(
-      "submit",
-      async function(event) {
+      /*
+        STEP 1
+        Check if user is already logged in
+      */
 
-        event.preventDefault();
+      const {
+        data: sessionData,
+        error: sessionError
+      } =
+      await supabaseClient.auth.getSession();
 
 
-        const message =
-          document.getElementById(
-            "message"
-          );
+      if (sessionError) {
+
+        message.textContent =
+          "Session error: " +
+          sessionError.message;
+
+        return;
+      }
+
+
+      let currentUser =
+        sessionData.session
+          ? sessionData.session.user
+          : null;
+
+
+      /*
+        STEP 2
+        If there is no logged-in user,
+        create a new account.
+      */
+
+      if (!currentUser) {
+
+        if (!password) {
+
+          message.textContent =
+            "Please enter your password.";
+
+          return;
+        }
 
 
         message.textContent =
-          "Creating your provider account...";
-
-
-        const email =
-          document
-            .getElementById("email")
-            .value
-            .trim();
-
-
-        const password =
-          document
-            .getElementById("password")
-            .value;
-
-
-        const full_name =
-          document
-            .getElementById("full_name")
-            .value
-            .trim();
-
-
-        const phone =
-          document
-            .getElementById("phone")
-            .value
-            .trim();
-
-
-        const whatsapp =
-          document
-            .getElementById("whatsapp")
-            .value
-            .trim();
-
-
-        const service =
-          document
-            .getElementById("service")
-            .value;
-
-
-        const location =
-          document
-            .getElementById("location")
-            .value
-            .trim();
-
-
-        const bio =
-          document
-            .getElementById("bio")
-            .value
-            .trim();
+          "Creating your account...";
 
 
         const {
@@ -431,7 +348,6 @@
             authError.message;
 
           return;
-
         }
 
 
@@ -441,55 +357,154 @@
             "Account was not created.";
 
           return;
-
         }
 
 
+        currentUser =
+          authData.user;
+
+
+        /*
+          If email confirmation is enabled,
+          Supabase may not create an active session.
+        */
+
+        if (!authData.session) {
+
+          message.textContent =
+            "✅ Account created. Please confirm your email, then login and return here to complete your provider profile.";
+
+          return;
+        }
+
+      }
+
+
+      /*
+        STEP 3
+        Create provider profile.
+      */
+
+      message.textContent =
+        "Saving provider profile...";
+
+
+      const {
+        data: existingProfile,
+        error: checkError
+      } =
+      await supabaseClient
+        .from("provider_profiles")
+        .select("id")
+        .eq(
+          "user_id",
+          currentUser.id
+        )
+        .maybeSingle();
+
+
+      if (checkError) {
+
+        console.log(checkError);
+
+        message.textContent =
+          "Could not check provider profile: " +
+          checkError.message;
+
+        return;
+      }
+
+
+      /*
+        If profile already exists,
+        update it instead of creating duplicate.
+      */
+
+      if (existingProfile) {
+
         const {
-          error: profileError
+          error: updateError
         } =
         await supabaseClient
           .from("provider_profiles")
-          .insert([
-            {
-              user_id: authData.user.id,
-              full_name: full_name,
-              phone: phone,
-              whatsapp: whatsapp,
-              service: service,
-              location: location,
-              bio: bio
-            }
-          ]);
+          .update({
+            full_name: full_name,
+            phone: phone,
+            whatsapp: whatsapp,
+            service: service,
+            location: location,
+            bio: bio
+          })
+          .eq(
+            "user_id",
+            currentUser.id
+          );
 
 
-        if (profileError) {
+        if (updateError) {
 
-          console.log(profileError);
+          console.log(updateError);
 
           message.textContent =
-            "Account created, but provider profile failed: " +
-            profileError.message;
+            "Provider profile update failed: " +
+            updateError.message;
 
           return;
-
         }
 
 
         message.textContent =
-          "✅ Provider registration successful! " +
-          "Check your email to confirm your account.";
+          "✅ Provider profile updated successfully!";
 
-
-        document
-          .getElementById("providerForm")
-          .reset();
-
+        return;
       }
-    );
+
+
+      /*
+        Create new provider profile
+      */
+
+      const {
+        error: profileError
+      } =
+      await supabaseClient
+        .from("provider_profiles")
+        .insert([
+          {
+            user_id: currentUser.id,
+            full_name: full_name,
+            phone: phone,
+            whatsapp: whatsapp,
+            service: service,
+            location: location,
+            bio: bio
+          }
+        ]);
+
+
+      if (profileError) {
+
+        console.log(profileError);
+
+        message.textContent =
+          "Provider profile failed: " +
+          profileError.message;
+
+        return;
+      }
+
+
+      message.textContent =
+        "✅ Provider registration successful!";
+
+      document
+        .getElementById("providerForm")
+        .reset();
+
+    }
+  );
 
 </script>
-
 
 </body>
 
