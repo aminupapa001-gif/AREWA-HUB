@@ -10,6 +10,16 @@
       font-family: Arial, sans-serif;
       padding: 20px;
       background: #f5f5f5;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: auto;
+    }
+
+    h1 {
+      color: #075e54;
     }
 
     .card {
@@ -17,6 +27,7 @@
       padding: 20px;
       border-radius: 15px;
       margin-top: 20px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
     }
 
     button {
@@ -27,11 +38,32 @@
       border-radius: 8px;
       cursor: pointer;
       font-size: 16px;
+      font-weight: bold;
+      color: white;
+      background: #075e54;
+    }
+
+    .service-button {
+      background: #0b7a3b;
+    }
+
+    .delivery-button {
+      background: #1565c0;
+    }
+
+    .message-button {
+      background: #6a1b9a;
+    }
+
+    .logout-button {
+      background: #b71c1c;
     }
   </style>
 </head>
 
 <body>
+
+<div class="container">
 
   <h1>🛍️ AREWA HUB</h1>
 
@@ -50,156 +82,204 @@
     <p id="buyerLocation"></p>
 
 
+    <!-- PRODUCTS -->
+
     <button onclick="window.location.href='products.html'">
       🛍️ Browse Products
     </button>
 
+
+    <!-- CART -->
 
     <button onclick="window.location.href='cart.html'">
       🛒 My Cart
     </button>
 
 
+    <!-- SERVICES -->
+
+    <button
+      class="service-button"
+      onclick="window.location.href='services.html'">
+
+      🛠️ Find a Service
+
+    </button>
+
+
+    <!-- ORDERS -->
+
     <button onclick="window.location.href='orders.html'">
       📦 My Orders
     </button>
 
 
-    <button onclick="logout()">
+    <!-- DELIVERY -->
+
+    <button
+      class="delivery-button"
+      onclick="window.location.href='delivery.html'">
+
+      🚚 Track Delivery
+
+    </button>
+
+
+    <!-- MESSAGES -->
+
+    <button
+      class="message-button"
+      onclick="window.location.href='chat.html'">
+
+      💬 Messages
+
+    </button>
+
+
+    <!-- LOGOUT -->
+
+    <button
+      class="logout-button"
+      onclick="logout()">
+
       🚪 Logout
+
     </button>
 
   </div>
 
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <script>
-
-    const SUPABASE_URL =
-      "https://ffjofoeiwaiyxecbeuwt.supabase.co";
-
-    const SUPABASE_KEY =
-      "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
-
-    const supabaseClient =
-      supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-      );
+</div>
 
 
-    async function loadBuyer() {
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-      const name =
-        document.getElementById("buyerName");
+<script>
 
-      const phone =
-        document.getElementById("buyerPhone");
+  const SUPABASE_URL =
+    "https://ffjofoeiwaiyxecbeuwt.supabase.co";
 
-      const location =
-        document.getElementById("buyerLocation");
-
-
-      const {
-        data: sessionData,
-        error: sessionError
-      } =
-        await supabaseClient.auth.getSession();
+  const SUPABASE_KEY =
+    "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
 
 
-      if (
-        sessionError ||
-        !sessionData.session
-      ) {
-
-        window.location.href =
-          "buyer_login.html";
-
-        return;
-      }
+  const supabaseClient =
+    supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
 
 
-      const user =
-        sessionData.session.user;
+  async function loadBuyer() {
+
+    const name =
+      document.getElementById("buyerName");
+
+    const phone =
+      document.getElementById("buyerPhone");
+
+    const location =
+      document.getElementById("buyerLocation");
 
 
-      const {
-        data: profile,
-        error: profileError
-      } =
-        await supabaseClient
-          .from("profiles")
-          .select(
-            "full_name, phone, location, role"
-          )
-          .eq("user_id", user.id)
-          .maybeSingle();
+    const {
+      data: sessionData,
+      error: sessionError
+    } =
+      await supabaseClient.auth.getSession();
 
 
-      if (profileError) {
-
-        console.log(profileError);
-
-        name.textContent =
-          "Failed to load buyer profile.";
-
-        return;
-      }
-
-
-      if (!profile) {
-
-        name.textContent =
-          "Buyer profile not found.";
-
-        return;
-      }
-
-
-      if (
-        String(profile.role).toLowerCase()
-        !== "buyer"
-      ) {
-
-        name.textContent =
-          "This is not a buyer account.";
-
-        return;
-      }
-
-
-      name.textContent =
-        "Welcome, " +
-        profile.full_name +
-        " 👋";
-
-
-      phone.textContent =
-        "📞 " +
-        profile.phone;
-
-
-      location.textContent =
-        "📍 " +
-        profile.location;
-
-    }
-
-
-    async function logout() {
-
-      await supabaseClient.auth.signOut();
+    if (
+      sessionError ||
+      !sessionData.session
+    ) {
 
       window.location.href =
         "buyer_login.html";
 
+      return;
     }
 
 
-    loadBuyer();
+    const user =
+      sessionData.session.user;
 
-  </script>
+
+    const {
+      data: profile,
+      error: profileError
+    } =
+      await supabaseClient
+        .from("profiles")
+        .select(
+          "full_name, phone, location, role"
+        )
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+
+    if (profileError) {
+
+      console.log(profileError);
+
+      name.textContent =
+        "Failed to load buyer profile.";
+
+      return;
+    }
+
+
+    if (!profile) {
+
+      name.textContent =
+        "Buyer profile not found.";
+
+      return;
+    }
+
+
+    if (
+      String(profile.role).toLowerCase()
+      !== "buyer"
+    ) {
+
+      name.textContent =
+        "This is not a buyer account.";
+
+      return;
+    }
+
+
+    name.textContent =
+      "Welcome, " +
+      profile.full_name +
+      " 👋";
+
+
+    phone.textContent =
+      "📞 " +
+      profile.phone;
+
+
+    location.textContent =
+      "📍 " +
+      profile.location;
+
+  }
+
+
+  async function logout() {
+
+    await supabaseClient.auth.signOut();
+
+    window.location.href =
+      "buyer_login.html";
+
+  }
+
+
+  loadBuyer();
+
+</script>
 
 </body>
 </html>
