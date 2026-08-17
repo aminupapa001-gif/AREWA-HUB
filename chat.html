@@ -1,11 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
   <title>AREWA HUB - Chat</title>
 
   <style>
+
     * {
       box-sizing: border-box;
     }
@@ -39,7 +47,7 @@
     .chat-header p {
       margin: 5px 0 0;
       font-size: 13px;
-      opacity: 0.85;
+      opacity: 0.9;
     }
 
     #messages {
@@ -88,6 +96,7 @@
       border-radius: 22px;
       padding: 12px 15px;
       outline: none;
+      font-size: 15px;
     }
 
     #sendButton {
@@ -102,21 +111,46 @@
     #sendButton:disabled {
       opacity: 0.5;
     }
+
+    .empty {
+      text-align: center;
+      color: #777;
+      padding: 30px;
+    }
+
   </style>
+
 </head>
+
 
 <body>
 
 <div class="chat-container">
 
   <div class="chat-header">
-    <h2 id="chatTitle">AREWA HUB Chat</h2>
-    <p id="chatStatus">Connecting...</p>
+
+    <h2 id="chatTitle">
+      AREWA HUB Chat
+    </h2>
+
+    <p id="chatStatus">
+      Connecting...
+    </p>
+
   </div>
 
-  <div id="messages"></div>
+
+  <div id="messages">
+
+    <div class="empty">
+      Loading messages...
+    </div>
+
+  </div>
+
 
   <div class="chat-input">
+
     <input
       id="messageInput"
       type="text"
@@ -124,153 +158,331 @@
       autocomplete="off"
     >
 
-    <button id="sendButton" disabled>
+    <button
+      id="sendButton"
+      disabled
+    >
       Send
     </button>
+
   </div>
 
 </div>
 
+
 <script type="module">
 
-  import { createClient } from
-    "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+import {
+  createClient
+}
+from
+"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
 
-  // ==========================================
-  // SUPABASE CONFIG
-  // ==========================================
-
-  const SUPABASE_URL =
-  "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+const SUPABASE_URL =
+"https://ffjofoeiwaiyxecbeuwt.supabase.co";
 
 const SUPABASE_ANON_KEY =
-  "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+"sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
 
 
-  const supabase = createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY
-  );
+const supabase =
+createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
 
 
-  // ==========================================
-  // ELEMENTS
-  // ==========================================
+const messagesBox =
+document.getElementById(
+  "messages"
+);
 
-  const messagesBox =
-    document.getElementById("messages");
+const messageInput =
+document.getElementById(
+  "messageInput"
+);
 
-  const messageInput =
-    document.getElementById("messageInput");
+const sendButton =
+document.getElementById(
+  "sendButton"
+);
 
-  const sendButton =
-    document.getElementById("sendButton");
+const chatStatus =
+document.getElementById(
+  "chatStatus"
+);
 
-  const chatStatus =
-    document.getElementById("chatStatus");
-
-
-  // ==========================================
-  // URL PARAMETERS
-  // ==========================================
-
-  const params =
-    new URLSearchParams(window.location.search);
-
-  const conversationId =
-    params.get("conversation_id");
+const chatTitle =
+document.getElementById(
+  "chatTitle"
+);
 
 
-  // ==========================================
-  // CURRENT USER
-  // ==========================================
+const params =
+new URLSearchParams(
+  window.location.search
+);
 
-  let currentUser = null;
+
+const requestedConversationId =
+params.get(
+  "conversation_id"
+);
 
 
-  async function getCurrentUser() {
+const targetUserId =
+params.get(
+  "user_id"
+);
+
+
+let currentUser = null;
+
+let conversationId = null;
+
+let realtimeChannel = null;
+
+
+/* =========================================
+   CURRENT USER
+========================================= */
+
+async function getCurrentUser() {
+
+  const {
+    data,
+    error
+  } =
+  await supabase.auth.getUser();
+
+
+  if (error) {
+
+    console.error(error);
+
+    chatStatus.textContent =
+      "Authentication error";
+
+    return null;
+
+  }
+
+
+  if (!data.user) {
+
+    chatStatus.textContent =
+      "Please login first";
+
+    return null;
+
+  }
+
+
+  return data.user;
+
+}
+
+
+/* =========================================
+   FIND OR CREATE CONVERSATION
+========================================= */
+
+async function findOrCreateConversation(
+  targetId
+) {
+
+  if (!currentUser) {
+    return null;
+  }
+
+
+  if (!targetId) {
+    return null;
+  }
+
+
+  if (
+    targetId ===
+    currentUser.id
+  ) {
+
+    alert(
+      "You cannot chat with yourself."
+    );
+
+    return null;
+
+  }
+
+
+  /*
+    Search both directions.
+
+    user A -> user B
+
+    OR
+
+    user B -> user A
+  */
+
+  const {
+    data,
+    error
+  } =
+  await supabase
+    .from("conversations")
+    .select("*")
+    .or(
+      `and(buyer_id.eq.${currentUser.id},seller_id.eq.${targetId}),and(buyer_id.eq.${targetId},seller_id.eq.${currentUser.id})`
+    )
+    .limit(1);
+
+
+  if (error) {
+
+    console.error(error);
+
+    chatStatus.textContent =
+      "Could not find conversation";
+
+    return null;
+
+  }
+
+
+  if (
+    data &&
+    data.length > 0
+  ) {
+
+    return data[0];
+
+  }
+
+
+  /*
+    Conversation does not exist.
+    Create one.
+
+    IMPORTANT:
+    buyer_id and seller_id are now
+    simply participant slots.
+  */
+
+  const {
+    data: created,
+    error: createError
+  } =
+  await supabase
+    .from("conversations")
+    .insert({
+
+      buyer_id:
+        currentUser.id,
+
+      seller_id:
+        targetId
+
+    })
+    .select()
+    .single();
+
+
+  if (createError) {
+
+    /*
+      Another request may have
+      created it first.
+
+      Search again.
+    */
+
+    console.error(
+      "Create conversation error:",
+      createError
+    );
+
 
     const {
-      data,
-      error
-    } = await supabase.auth.getUser();
+      data: retryData
+    } =
+    await supabase
+      .from("conversations")
+      .select("*")
+      .or(
+        `and(buyer_id.eq.${currentUser.id},seller_id.eq.${targetId}),and(buyer_id.eq.${targetId},seller_id.eq.${currentUser.id})`
+      )
+      .limit(1);
 
 
-    if (error) {
+    if (
+      retryData &&
+      retryData.length > 0
+    ) {
 
-      console.error(error);
-
-      chatStatus.textContent =
-        "Authentication error";
-
-      return;
-
-    }
-
-
-    currentUser = data.user;
-
-
-    if (!currentUser) {
-
-      chatStatus.textContent =
-        "Please login first";
-
-      sendButton.disabled = true;
-
-      return;
+      return retryData[0];
 
     }
 
 
     chatStatus.textContent =
-      "Online";
+      "Could not create conversation";
 
-    sendButton.disabled = false;
-
-
-    await loadMessages();
-
-    subscribeToMessages();
+    return null;
 
   }
 
 
-  // ==========================================
-  // LOAD OLD MESSAGES
-  // ==========================================
+  return created;
 
-  async function loadMessages() {
+}
 
-    if (!conversationId) {
 
-      chatStatus.textContent =
-        "Conversation not selected";
+/* =========================================
+   LOAD CONVERSATION
+========================================= */
 
-      sendButton.disabled = true;
+async function initializeChat() {
 
-      return;
+  currentUser =
+    await getCurrentUser();
 
-    }
 
+  if (!currentUser) {
+
+    sendButton.disabled =
+      true;
+
+    return;
+
+  }
+
+
+  let conversation = null;
+
+
+  /*
+    OPTION 1:
+    Existing conversation
+  */
+
+  if (
+    requestedConversationId
+  ) {
 
     const {
       data,
       error
-    } = await supabase
-      .from("messages")
+    } =
+    await supabase
+      .from("conversations")
       .select("*")
       .eq(
-        "conversation_id",
-        conversationId
+        "id",
+        requestedConversationId
       )
-      .order(
-        "created_at",
-        {
-          ascending: true
-        }
-      );
+      .single();
 
 
     if (error) {
@@ -278,89 +490,297 @@ const SUPABASE_ANON_KEY =
       console.error(error);
 
       chatStatus.textContent =
-        "Failed to load messages";
+        "Conversation not found";
 
       return;
 
     }
 
 
-    messagesBox.innerHTML = "";
+    /*
+      Security check in frontend
+    */
+
+    if (
+      data.buyer_id !==
+      currentUser.id &&
+      data.seller_id !==
+      currentUser.id
+    ) {
+
+      chatStatus.textContent =
+        "You are not part of this conversation";
+
+      return;
+
+    }
 
 
-    data.forEach(
-      addMessage
+    conversation =
+      data;
+
+  }
+
+
+  /*
+    OPTION 2:
+    Start chat with user
+  */
+
+  else if (
+    targetUserId
+  ) {
+
+    conversation =
+      await findOrCreateConversation(
+        targetUserId
+      );
+
+  }
+
+
+  /*
+    Nothing supplied
+  */
+
+  else {
+
+    chatStatus.textContent =
+      "No conversation selected";
+
+    sendButton.disabled =
+      true;
+
+    return;
+
+  }
+
+
+  if (!conversation) {
+    return;
+  }
+
+
+  conversationId =
+    conversation.id;
+
+
+  chatTitle.textContent =
+    "💬 AREWA HUB Chat";
+
+
+  chatStatus.textContent =
+    "Online";
+
+
+  sendButton.disabled =
+    false;
+
+
+  await loadMessages();
+
+
+  subscribeToMessages();
+
+
+  await markMessagesAsRead();
+
+
+  messageInput.focus();
+
+}
+
+
+/* =========================================
+   LOAD MESSAGES
+========================================= */
+
+async function loadMessages() {
+
+  if (!conversationId) {
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+  await supabase
+    .from("messages")
+    .select("*")
+    .eq(
+      "conversation_id",
+      conversationId
+    )
+    .order(
+      "created_at",
+      {
+        ascending: true
+      }
     );
 
 
-    scrollToBottom();
+  if (error) {
+
+    console.error(error);
+
+    chatStatus.textContent =
+      "Failed to load messages";
+
+    return;
 
   }
 
 
-  // ==========================================
-  // DISPLAY MESSAGE
-  // ==========================================
-
-  function addMessage(message) {
-
-    const div =
-      document.createElement("div");
+  messagesBox.innerHTML =
+    "";
 
 
-    div.className =
-      "message " +
-      (
-        message.sender_id === currentUser.id
-          ? "mine"
-          : "theirs"
-      );
+  if (
+    !data ||
+    data.length === 0
+  ) {
 
+    messagesBox.innerHTML = `
+      <div class="empty">
+        No messages yet.<br>
+        Start the conversation.
+      </div>
+    `;
 
-    const text =
-      document.createElement("div");
-
-    text.textContent =
-      message.message;
-
-
-    const time =
-      document.createElement("span");
-
-    time.className =
-      "message-time";
-
-
-    time.textContent =
-      new Date(
-        message.created_at
-      ).toLocaleTimeString(
-        [],
-        {
-          hour: "2-digit",
-          minute: "2-digit"
-        }
-      );
-
-
-    div.appendChild(text);
-
-    div.appendChild(time);
-
-    messagesBox.appendChild(div);
+    return;
 
   }
 
 
-  // ==========================================
-  // REAL-TIME
-  // ==========================================
+  data.forEach(
+    addMessage
+  );
 
-  function subscribeToMessages() {
 
+  scrollToBottom();
+
+}
+
+
+/* =========================================
+   DISPLAY MESSAGE
+========================================= */
+
+function addMessage(
+  message
+) {
+
+  /*
+    Prevent duplicate realtime
+    messages.
+  */
+
+  const existing =
+    document.querySelector(
+      `[data-message-id="${message.id}"]`
+    );
+
+
+  if (existing) {
+    return;
+  }
+
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+
+  div.className =
+    "message " +
+    (
+      message.sender_id ===
+      currentUser.id
+        ? "mine"
+        : "theirs"
+    );
+
+
+  div.dataset.messageId =
+    message.id;
+
+
+  const text =
+    document.createElement(
+      "div"
+    );
+
+
+  text.textContent =
+    message.message;
+
+
+  const time =
+    document.createElement(
+      "span"
+    );
+
+
+  time.className =
+    "message-time";
+
+
+  time.textContent =
+    new Date(
+      message.created_at
+    ).toLocaleTimeString(
+      [],
+      {
+        hour: "2-digit",
+        minute: "2-digit"
+      }
+    );
+
+
+  div.appendChild(
+    text
+  );
+
+  div.appendChild(
+    time
+  );
+
+
+  messagesBox.appendChild(
+    div
+  );
+
+}
+
+
+/* =========================================
+   REALTIME
+========================================= */
+
+function subscribeToMessages() {
+
+  if (!conversationId) {
+    return;
+  }
+
+
+  if (realtimeChannel) {
+
+    supabase.removeChannel(
+      realtimeChannel
+    );
+
+  }
+
+
+  realtimeChannel =
     supabase
       .channel(
-        "chat-" + conversationId
+        "arewa-chat-" +
+        conversationId
       )
       .on(
         "postgres_changes",
@@ -380,139 +800,233 @@ const SUPABASE_ANON_KEY =
 
           scrollToBottom();
 
+
+          if (
+            payload.new.sender_id !==
+            currentUser.id
+          ) {
+
+            markMessagesAsRead();
+
+          }
+
         }
       )
-      .subscribe();
+      .subscribe(
+        status => {
+
+          console.log(
+            "Realtime:",
+            status
+          );
+
+        }
+      );
+
+}
+
+
+/* =========================================
+   SEND MESSAGE
+========================================= */
+
+async function sendMessage() {
+
+  const text =
+    messageInput.value.trim();
+
+
+  if (!text) {
+    return;
+  }
+
+
+  if (
+    !currentUser ||
+    !conversationId
+  ) {
+
+    alert(
+      "Chat is not ready."
+    );
+
+    return;
 
   }
 
 
-  // ==========================================
-  // SEND MESSAGE
-  // ==========================================
-
-  async function sendMessage() {
-
-    const text =
-      messageInput.value.trim();
+  sendButton.disabled =
+    true;
 
 
-    if (!text) return;
+  const {
+    data,
+    error
+  } =
+  await supabase
+    .from("messages")
+    .insert({
+
+      conversation_id:
+        conversationId,
+
+      sender_id:
+        currentUser.id,
+
+      message:
+        text,
+
+      is_read:
+        false
+
+    })
+    .select()
+    .single();
 
 
-    if (!currentUser) {
+  if (error) {
 
-      alert(
-        "Please login first."
+    console.error(error);
+
+    alert(
+      "Failed to send message: " +
+      error.message
+    );
+
+  } else {
+
+    /*
+      Realtime will normally
+      display the message.
+
+      Add locally too in case
+      realtime is slightly delayed.
+    */
+
+    if (data) {
+
+      addMessage(
+        data
       );
 
-      return;
+      scrollToBottom();
 
     }
 
 
-    if (!conversationId) {
-
-      alert(
-        "Conversation not found."
-      );
-
-      return;
-
-    }
-
-
-    sendButton.disabled = true;
-
-
-    const {
-      error
-    } = await supabase
-      .from("messages")
-      .insert({
-
-        conversation_id:
-          conversationId,
-
-        sender_id:
-          currentUser.id,
-
-        message:
-          text
-
-      });
-
-
-    if (error) {
-
-      console.error(error);
-
-      alert(
-        "Failed to send message: " +
-        error.message
-      );
-
-    } else {
-
-      messageInput.value = "";
-
-    }
-
-
-    sendButton.disabled = false;
-
-    messageInput.focus();
+    messageInput.value =
+      "";
 
   }
 
 
-  // ==========================================
-  // SCROLL
-  // ==========================================
+  sendButton.disabled =
+    false;
 
-  function scrollToBottom() {
+  messageInput.focus();
 
-    messagesBox.scrollTop =
-      messagesBox.scrollHeight;
+}
+
+
+/* =========================================
+   MARK AS READ
+========================================= */
+
+async function markMessagesAsRead() {
+
+  if (
+    !conversationId ||
+    !currentUser
+  ) {
+
+    return;
 
   }
 
 
-  // ==========================================
-  // EVENTS
-  // ==========================================
+  const {
+    error
+  } =
+  await supabase
+    .from("messages")
+    .update({
+      is_read: true
+    })
+    .eq(
+      "conversation_id",
+      conversationId
+    )
+    .neq(
+      "sender_id",
+      currentUser.id
+    )
+    .eq(
+      "is_read",
+      false
+    );
 
-  sendButton.addEventListener(
-    "click",
-    sendMessage
-  );
+
+  if (error) {
+
+    console.log(
+      "Read status:",
+      error.message
+    );
+
+  }
+
+}
 
 
-  messageInput.addEventListener(
-    "keydown",
-    event => {
+/* =========================================
+   SCROLL
+========================================= */
 
-      if (
-        event.key === "Enter"
-      ) {
+function scrollToBottom() {
 
-        event.preventDefault();
+  messagesBox.scrollTop =
+    messagesBox.scrollHeight;
 
-        sendMessage();
+}
 
-      }
+
+/* =========================================
+   EVENTS
+========================================= */
+
+sendButton.addEventListener(
+  "click",
+  sendMessage
+);
+
+
+messageInput.addEventListener(
+  "keydown",
+  event => {
+
+    if (
+      event.key === "Enter"
+    ) {
+
+      event.preventDefault();
+
+      sendMessage();
 
     }
-  );
+
+  }
+);
 
 
-  // ==========================================
-  // START
-  // ==========================================
+/* =========================================
+   START
+========================================= */
 
-  getCurrentUser();
+initializeChat();
+
 
 </script>
 
 </body>
+
   </html>
