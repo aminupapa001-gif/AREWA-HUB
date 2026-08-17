@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>AREWA HUB - Messages</title>
+
+  <style>
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #075e54;
+    }
+
+    .conversation {
+      background: white;
+      padding: 16px;
+      margin: 12px 0;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      cursor: pointer;
+    }
+
+    .conversation h3 {
+      margin: 0 0 8px;
+    }
+
+    .conversation p {
+      margin: 5px 0;
+      color: #555;
+    }
+
+    .open-button {
+      display: block;
+      text-align: center;
+      text-decoration: none;
+      background: #075e54;
+      color: white;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    .empty {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+  <h1>💬 AREWA HUB</h1>
+
+  <h2>Messages</h2>
+
+  <p id="status">
+    Loading conversations...
+  </p>
+
+  <div id="conversationList"></div>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+  const SUPABASE_URL =
+    "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
+  const SUPABASE_KEY =
+    "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+
+  const supabaseClient =
+    supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+
+  const status =
+    document.getElementById("status");
+
+  const conversationList =
+    document.getElementById(
+      "conversationList"
+    );
+
+
+  async function loadConversations() {
+
+    const {
+      data: sessionData,
+      error: sessionError
+    } =
+      await supabaseClient.auth.getSession();
+
+
+    if (
+      sessionError ||
+      !sessionData.session
+    ) {
+
+      status.textContent =
+        "Please login first.";
+
+      return;
+
+    }
+
+
+    const currentUser =
+      sessionData.session.user;
+
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("conversations")
+        .select("*")
+        .eq(
+          "seller_id",
+          currentUser.id
+        )
+        .order(
+          "created_at",
+          {
+            ascending: false
+          }
+        );
+
+
+    if (error) {
+
+      console.error(error);
+
+      status.textContent =
+        "Failed to load messages: " +
+        error.message;
+
+      return;
+
+    }
+
+
+    conversationList.innerHTML = "";
+
+
+    if (
+      !data ||
+      data.length === 0
+    ) {
+
+      status.textContent =
+        "";
+
+      conversationList.innerHTML = `
+        <div class="empty">
+          <h3>📭 No Messages Yet</h3>
+          <p>
+            Buyers who contact you will appear here.
+          </p>
+        </div>
+      `;
+
+      return;
+
+    }
+
+
+    status.textContent =
+      data.length +
+      " conversation(s)";
+
+
+    data.forEach(
+      function(conversation) {
+
+        const div =
+          document.createElement("div");
+
+        div.className =
+          "conversation";
+
+
+        div.innerHTML = `
+
+          <h3>
+            👤 Buyer
+          </h3>
+
+          <p>
+            🕐 ${new Date(
+              conversation.created_at
+            ).toLocaleString()}
+          </p>
+
+          <a
+            class="open-button"
+            href="chat.html?conversation_id=${
+              conversation.id
+            }">
+
+            💬 Open Chat
+
+          </a>
+
+        `;
+
+
+        conversationList.appendChild(
+          div
+        );
+
+      }
+    );
+
+  }
+
+
+  loadConversations();
+
+</script>
+
+</body>
+
+</html>
