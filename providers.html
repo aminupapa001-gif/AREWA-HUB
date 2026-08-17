@@ -2,16 +2,32 @@
 <html lang="en">
 
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <title>AREWA HUB - Providers</title>
 
   <style>
+
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
       background: #f5f7fa;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: auto;
+    }
+
+    h1 {
+      color: #075e54;
     }
 
     .provider-card {
@@ -22,18 +38,47 @@
       box-shadow: 0 3px 10px rgba(0,0,0,0.08);
     }
 
+    .provider-card h3 {
+      margin-top: 0;
+    }
+
+    .provider-card p {
+      color: #555;
+      line-height: 1.5;
+    }
+
     button {
+      width: 100%;
       padding: 12px 18px;
       border: none;
       border-radius: 8px;
-      background: #0b7a3b;
       color: white;
       font-weight: bold;
+      margin-top: 8px;
+      cursor: pointer;
     }
+
+    .chat-button {
+      background: #075e54;
+    }
+
+    .contact-button {
+      background: #0b7a3b;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
   </style>
+
 </head>
 
+
 <body>
+
+<div class="container">
 
   <h1>🛠️ AREWA HUB</h1>
 
@@ -47,147 +92,278 @@
     Loading providers...
   </div>
 
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <script>
-
-    const SUPABASE_URL =
-      "https://ffjofoeiwaiyxecbeuwt.supabase.co";
-
-    const SUPABASE_KEY =
-      "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+</div>
 
 
-    const supabaseClient =
-      supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-      );
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+const SUPABASE_URL =
+"https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
 
 
-    const params =
-      new URLSearchParams(
-        window.location.search
-      );
+const supabaseClient =
+supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
 
 
-    const service =
-      params.get("service");
+const params =
+new URLSearchParams(
+  window.location.search
+);
 
 
+const service =
+params.get("service");
+
+
+document.getElementById(
+  "selectedService"
+).textContent =
+service
+  ? "Providers for: " + service
+  : "All Service Providers";
+
+
+async function loadProviders() {
+
+  const list =
     document.getElementById(
-      "selectedService"
-    ).textContent =
-      service
-        ? "Providers for: " + service
-        : "All Service Providers";
+      "providersList"
+    );
 
 
-    async function loadProviders() {
+  const {
+    data,
+    error
+  } =
+  await supabaseClient
+    .from("provider_profiles")
+    .select("*");
 
-      const list =
-        document.getElementById(
-          "providersList"
+
+  if (error) {
+
+    console.error(error);
+
+    list.innerHTML = `
+      <p>
+        ❌ ${error.message}
+      </p>
+    `;
+
+    return;
+
+  }
+
+
+  const providers =
+    data || [];
+
+
+  if (
+    providers.length === 0
+  ) {
+
+    list.innerHTML = `
+      <p>
+        ❌ No providers found.
+      </p>
+    `;
+
+    return;
+
+  }
+
+
+  list.innerHTML = "";
+
+
+  providers.forEach(
+    function(provider) {
+
+      const userId =
+        provider.user_id;
+
+
+      const card =
+        document.createElement(
+          "div"
         );
 
 
-      const result =
-        await supabaseClient
-          .from("provider_profiles")
-          .select("*");
+      card.className =
+        "provider-card";
 
 
-      console.log(
-        "SUPABASE RESULT:",
-        result
-      );
+      card.innerHTML = `
+
+        <h3>
+          👤 ${
+            provider.full_name ||
+            "Provider"
+          }
+        </h3>
+
+        <p>
+          🛠️ <strong>Service:</strong>
+          ${
+            provider.service ||
+            "Not specified"
+          }
+        </p>
+
+        <p>
+          📍 <strong>Location:</strong>
+          ${
+            provider.location ||
+            "Not specified"
+          }
+        </p>
+
+        <p>
+          📞 <strong>Phone:</strong>
+          ${
+            provider.phone ||
+            "Not available"
+          }
+        </p>
+
+        <p>
+          💬 <strong>WhatsApp:</strong>
+          ${
+            provider.whatsapp ||
+            "Not available"
+          }
+        </p>
+
+        <p>
+          📝 ${
+            provider.bio ||
+            ""
+          }
+        </p>
+
+      `;
 
 
-      if (result.error) {
+      /* ==========================
+         CHAT BUTTON
+      ========================== */
 
-        list.innerHTML =
-          "<p>❌ ERROR: " +
-          result.error.message +
-          "</p>";
+      if (userId) {
 
-        return;
+        const chatButton =
+          document.createElement(
+            "button"
+          );
+
+
+        chatButton.className =
+          "chat-button";
+
+
+        chatButton.textContent =
+          "💬 Chat with Provider";
+
+
+        chatButton.onclick =
+          function() {
+
+            window.location.href =
+              "chat.html?user_id=" +
+              encodeURIComponent(
+                userId
+              );
+
+          };
+
+
+        card.appendChild(
+          chatButton
+        );
+
+      } else {
+
+        const disabledButton =
+          document.createElement(
+            "button"
+          );
+
+
+        disabledButton.disabled =
+          true;
+
+
+        disabledButton.textContent =
+          "Chat unavailable";
+
+
+        card.appendChild(
+          disabledButton
+        );
+
       }
 
 
-      const providers =
-        result.data || [];
+      /* ==========================
+         CONTACT BUTTON
+      ========================== */
+
+      if (provider.id) {
+
+        const contactButton =
+          document.createElement(
+            "button"
+          );
 
 
-      if (providers.length === 0) {
+        contactButton.className =
+          "contact-button";
 
-        list.innerHTML =
-          "<p>❌ Browser received ZERO providers.</p>";
 
-        return;
+        contactButton.textContent =
+          "📞 Contact Provider";
+
+
+        contactButton.onclick =
+          function() {
+
+            window.location.href =
+              "contact.html?id=" +
+              encodeURIComponent(
+                provider.id
+              );
+
+          };
+
+
+        card.appendChild(
+          contactButton
+        );
+
       }
 
 
-      list.innerHTML = "";
-
-
-      providers.forEach(
-        function(provider) {
-
-          list.innerHTML += `
-
-            <div class="provider-card">
-
-              <h3>
-                👤 ${provider.full_name}
-              </h3>
-
-              <p>
-                🛠️ Service:
-                ${provider.service}
-              </p>
-
-              <p>
-                📍 Location:
-                ${provider.location}
-              </p>
-
-              <p>
-                📞 Phone:
-                ${provider.phone}
-              </p>
-
-              <p>
-                💬 WhatsApp:
-                ${provider.whatsapp}
-              </p>
-
-              <p>
-                📝 ${provider.bio || ""}
-              </p>
-
-              <button
-                onclick="
-                  window.location.href =
-                  'contact.html?id=${provider.id}'
-                "
-              >
-                💬 Contact Provider
-              </button>
-
-            </div>
-
-          `;
-
-        }
+      list.appendChild(
+        card
       );
 
     }
+  );
+
+}
 
 
-    loadProviders();
+loadProviders();
 
-  </script>
+</script>
 
 </body>
 
