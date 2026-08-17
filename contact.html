@@ -105,145 +105,167 @@
 </div>
 
 
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 
 <script>
 
-  const SUPABASE_URL =
-    "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
+const SUPABASE_URL =
+"https://ffjofoeiwaiyxecbeuwt.supabase.co";
 
 
-  const SUPABASE_KEY =
-    "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+const SUPABASE_KEY =
+"sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
 
 
-  const supabaseClient =
-    supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
-    );
+const supabaseClient =
+supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
 
 
-  const params =
-    new URLSearchParams(
-      window.location.search
-    );
+
+const params =
+new URLSearchParams(
+  window.location.search
+);
 
 
-  const providerId =
-    params.get("id");
+const providerId =
+params.get("id");
 
 
-  const providerInfo =
-    document.getElementById(
-      "providerInfo"
-    );
+const providerInfo =
+document.getElementById(
+  "providerInfo"
+);
 
 
-  const message =
-    document.getElementById(
-      "message"
-    );
+const message =
+document.getElementById(
+  "message"
+);
 
 
-  let providerData = null;
+let providerData = null;
 
 
-  async function loadProvider() {
 
-    if (!providerId) {
+/* ==========================
+   LOAD PROVIDER
+========================== */
 
-      providerInfo.innerHTML =
-        "<p>❌ Provider ID not found.</p>";
+async function loadProvider() {
 
-      return;
+  if (!providerId) {
 
-    }
+    providerInfo.innerHTML =
+      "<p>❌ Provider ID not found.</p>";
 
+    return;
 
-    const {
-      data,
-      error
-    } =
-    await supabaseClient
-      .from("provider_profiles")
-      .select("*")
-      .eq("id", providerId)
-      .single();
+  }
 
 
-    if (error || !data) {
-
-      console.log(error);
-
-      providerInfo.innerHTML =
-        "<p>❌ Provider not found.</p>";
-
-      return;
-
-    }
-
-
-    providerData = data;
-
-
-    let whatsappNumber =
-      data.whatsapp
-        ? data.whatsapp.replace(/\D/g, "")
-        : "";
+  const {
+    data,
+    error
+  } =
+  await supabaseClient
+    .from("provider_profiles")
+    .select("*")
+    .eq(
+      "id",
+      providerId
+    )
+    .single();
 
 
-    let whatsappInternational =
-      whatsappNumber.startsWith("234")
-        ? whatsappNumber
-        : "234" +
-          whatsappNumber.replace(
-            /^0/,
-            ""
-          );
+  if (
+    error ||
+    !data
+  ) {
+
+    console.log(error);
+
+    providerInfo.innerHTML =
+      "<p>❌ Provider not found.</p>";
+
+    return;
+
+  }
 
 
-    providerInfo.innerHTML = `
-
-      <div class="provider-name">
-        👤 ${data.full_name}
-      </div>
-
-      <p class="info">
-        🛠️ <strong>Service:</strong>
-        ${data.service}
-      </p>
-
-      <p class="info">
-        📍 <strong>Location:</strong>
-        ${data.location}
-      </p>
-
-      <p class="info">
-        📞 <strong>Phone:</strong>
-        ${data.phone}
-      </p>
-
-      <p class="info">
-        💬 <strong>WhatsApp:</strong>
-        ${data.whatsapp || "Not provided"}
-      </p>
-
-      <p class="info">
-        📝 <strong>About:</strong>
-        ${data.bio || "No bio available."}
-      </p>
+  providerData =
+    data;
 
 
-      <button
-        class="chat-button"
-        onclick="startChat()"
-      >
-        💬 Message Provider
-      </button>
+  let whatsappNumber =
+    data.whatsapp
+      ? data.whatsapp.replace(
+          /\D/g,
+          ""
+        )
+      : "";
 
 
+  let whatsappInternational =
+    whatsappNumber.startsWith("234")
+      ? whatsappNumber
+      : "234" +
+        whatsappNumber.replace(
+          /^0/,
+          ""
+        );
+
+
+  providerInfo.innerHTML = `
+
+    <div class="provider-name">
+      👤 ${data.full_name}
+    </div>
+
+    <p class="info">
+      🛠️ <strong>Service:</strong>
+      ${data.service || ""}
+    </p>
+
+    <p class="info">
+      📍 <strong>Location:</strong>
+      ${data.location || ""}
+    </p>
+
+    <p class="info">
+      📞 <strong>Phone:</strong>
+      ${data.phone || ""}
+    </p>
+
+    <p class="info">
+      💬 <strong>WhatsApp:</strong>
+      ${data.whatsapp || "Not provided"}
+    </p>
+
+    <p class="info">
+      📝 <strong>About:</strong>
+      ${data.bio || "No bio available."}
+    </p>
+
+
+    <button
+      class="chat-button"
+      id="chatButton"
+    >
+      💬 Message Provider
+    </button>
+
+
+    ${
+      data.phone
+      ?
+      `
       <a
         href="tel:${data.phone}"
         style="text-decoration:none;"
@@ -254,151 +276,245 @@
         </button>
 
       </a>
+      `
+      :
+      ""
+    }
 
 
-      ${
-        whatsappNumber
-        ?
-        `
-        <a
-          href="https://wa.me/${whatsappInternational}"
-          target="_blank"
-          style="text-decoration:none;"
-        >
+    ${
+      whatsappNumber
+      ?
+      `
+      <a
+        href="https://wa.me/${whatsappInternational}"
+        target="_blank"
+        style="text-decoration:none;"
+      >
 
-          <button class="whatsapp-button">
-            💬 WhatsApp Provider
-          </button>
+        <button class="whatsapp-button">
+          💬 WhatsApp Provider
+        </button>
 
-        </a>
-        `
-        :
-        ""
-      }
+      </a>
+      `
+      :
+      ""
+    }
 
-    `;
+  `;
+
+
+  document
+    .getElementById(
+      "chatButton"
+    )
+    .addEventListener(
+      "click",
+      startChat
+    );
+
+}
+
+
+
+/* ==========================
+   START CHAT
+========================== */
+
+async function startChat() {
+
+  if (!providerData) {
+
+    message.textContent =
+      "❌ Provider information is not ready.";
+
+    return;
 
   }
 
 
-  async function startChat() {
+  message.textContent =
+    "Checking your account...";
+
+
+  const {
+    data: userData,
+    error: userError
+  } =
+  await supabaseClient.auth.getUser();
+
+
+  if (
+    userError ||
+    !userData.user
+  ) {
 
     message.textContent =
-      "Checking your account...";
+      "❌ Please login first.";
+
+    return;
+
+  }
 
 
-    const {
-      data: userData,
-      error: userError
-    } =
-    await supabaseClient.auth.getUser();
+  const currentUserId =
+    userData.user.id;
 
 
-    if (
-      userError ||
-      !userData.user
-    ) {
-
-      message.textContent =
-        "❌ Please login as a buyer first.";
-
-      return;
-
-    }
+  const providerUserId =
+    providerData.user_id;
 
 
-    const buyerId =
-      userData.user.id;
-
-
-    if (
-      buyerId === providerData.user_id
-    ) {
-
-      message.textContent =
-        "❌ You cannot message yourself.";
-
-      return;
-
-    }
-
+  if (!providerUserId) {
 
     message.textContent =
-      "Opening chat...";
+      "❌ This provider has no user ID.";
+
+    return;
+
+  }
 
 
-    const {
-      data: existing,
-      error: existingError
-    } =
-    await supabaseClient
-      .from("conversations")
-      .select("id")
-      .eq("buyer_id", buyerId)
-      .eq("seller_id", providerData.user_id)
-      .maybeSingle();
+  if (
+    currentUserId ===
+    providerUserId
+  ) {
+
+    message.textContent =
+      "❌ You cannot message yourself.";
+
+    return;
+
+  }
 
 
-    if (
-      existingError &&
-      existingError.code !== "PGRST116"
-    ) {
-
-      console.log(existingError);
-
-    }
+  message.textContent =
+    "Opening chat...";
 
 
-    if (existing) {
+  /*
+    Search for existing conversation
+    in either direction.
+  */
 
-      window.location.href =
-        "chat.html?conversation_id=" +
-        existing.id;
-
-      return;
-
-    }
-
-
-    const {
-      data: newConversation,
-      error: conversationError
-    } =
-    await supabaseClient
-      .from("conversations")
-      .insert([
-        {
-          buyer_id: buyerId,
-          seller_id: providerData.user_id
-        }
-      ])
-      .select()
-      .single();
+  const {
+    data: existing,
+    error: existingError
+  } =
+  await supabaseClient
+    .from("conversations")
+    .select("id")
+    .or(
+      `
+      and(
+        buyer_id.eq.${currentUserId},
+        seller_id.eq.${providerUserId}
+      ),
+      and(
+        buyer_id.eq.${providerUserId},
+        seller_id.eq.${currentUserId}
+      )
+      `
+    )
+    .limit(1);
 
 
-    if (conversationError) {
+  if (existingError) {
 
-      console.log(
-        conversationError
-      );
+    console.log(
+      existingError
+    );
 
-      message.textContent =
-        "❌ Could not start chat: " +
-        conversationError.message;
+    message.textContent =
+      "❌ Failed to check conversation: " +
+      existingError.message;
 
-      return;
+    return;
 
-    }
+  }
 
+
+  /*
+    Conversation already exists
+  */
+
+  if (
+    existing &&
+    existing.length > 0
+  ) {
 
     window.location.href =
       "chat.html?conversation_id=" +
-      newConversation.id;
+      encodeURIComponent(
+        existing[0].id
+      );
+
+    return;
 
   }
 
 
-  loadProvider();
+  /*
+    Create new conversation.
+
+    buyer_id and seller_id are
+    simply the two users in the chat.
+  */
+
+  const {
+    data: newConversation,
+    error: conversationError
+  } =
+  await supabaseClient
+    .from("conversations")
+    .insert({
+
+      buyer_id:
+        currentUserId,
+
+      seller_id:
+        providerUserId
+
+    })
+    .select()
+    .single();
+
+
+  if (conversationError) {
+
+    console.log(
+      conversationError
+    );
+
+    message.textContent =
+      "❌ Could not start chat: " +
+      conversationError.message;
+
+    return;
+
+  }
+
+
+  /*
+    Open chat
+  */
+
+  window.location.href =
+    "chat.html?conversation_id=" +
+    encodeURIComponent(
+      newConversation.id
+    );
+
+}
+
+
+
+/* ==========================
+   START
+========================== */
+
+loadProvider();
 
 </script>
 
