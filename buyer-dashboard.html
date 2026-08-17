@@ -4,29 +4,131 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AREWA HUB - Buyer Dashboard</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #075e54;
+    }
+
+    .section {
+      background: white;
+      padding: 16px;
+      margin: 15px 0;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    }
+
+    .button {
+      display: block;
+      text-decoration: none;
+      background: #075e54;
+      color: white;
+      padding: 14px;
+      margin: 10px 0;
+      border-radius: 10px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .service-button {
+      background: #0b7a3b;
+    }
+  </style>
 </head>
 
 <body>
+
+<div class="container">
 
   <h1>🛍️ AREWA HUB</h1>
 
   <h2>Buyer Dashboard</h2>
 
-  <p>Welcome to your buyer account.</p>
+  <p>
+    Welcome to your buyer account.
+  </p>
 
-  <h3>Shopping</h3>
 
-  <p><a href="buyer.html">🛍️ Browse Products</a></p>
-  <p><a href="cart.html">🛒 My Cart</a></p>
+  <div class="section">
 
-  <h3>Orders</h3>
+    <h3>🛍️ Shopping</h3>
 
-  <p><a href="orders.html">📦 My Orders</a></p>
-  <p><a href="delivery.html">🚚 Track Delivery</a></p>
+    <a
+      class="button"
+      href="buyer.html">
+      🛍️ Browse Products
+    </a>
 
-  <h3>Account</h3>
+    <a
+      class="button"
+      href="cart.html">
+      🛒 My Cart
+    </a>
 
-  <p><a href="dashboard.html">← Back to Dashboard</a></p>
+  </div>
+
+
+  <div class="section">
+
+    <h3>🛠️ Services</h3>
+
+    <p>
+      Find trusted service providers across Northern Nigeria.
+    </p>
+
+    <a
+      class="button service-button"
+      href="services.html">
+      🔎 Find a Service
+    </a>
+
+  </div>
+
+
+  <div class="section">
+
+    <h3>📦 Orders & Delivery</h3>
+
+    <a
+      class="button"
+      href="orders.html">
+      📦 My Orders
+    </a>
+
+    <a
+      class="button"
+      href="delivery.html">
+      🚚 Track Delivery
+    </a>
+
+  </div>
+
+
+  <div class="section">
+
+    <h3>👤 Account</h3>
+
+    <a
+      class="button"
+      href="dashboard.html">
+      ← Back to Dashboard
+    </a>
+
+  </div>
+
+</div>
 
 </body>
 </html>
