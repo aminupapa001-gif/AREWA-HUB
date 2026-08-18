@@ -3,105 +3,195 @@
 
 <head>
 
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
 
-  <title>AREWA HUB - Messages</title>
+<title>AREWA HUB - Messages</title>
 
-  <style>
+<style>
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f5f7fa;
-    }
+* {
+  box-sizing: border-box;
+}
 
-    .container {
-      max-width: 700px;
-      margin: auto;
-      padding: 20px;
-    }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f5f7fa;
+}
 
-    h1 {
-      color: #075e54;
-    }
+.container {
+  max-width: 700px;
+  margin: auto;
+  padding: 20px;
+}
 
-    .conversation {
-      background: white;
-      padding: 16px;
-      margin: 12px 0;
-      border-radius: 12px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-    }
+.header {
+  background: linear-gradient(135deg, #075e54, #0b7a3b);
+  color: white;
+  padding: 22px;
+  border-radius: 0 0 20px 20px;
+  margin: -20px -20px 20px -20px;
+}
 
-    .conversation h3 {
-      margin: 0 0 8px;
-    }
+.header h1 {
+  margin: 0;
+}
 
-    .conversation p {
-      margin: 6px 0;
-      color: #666;
-      font-size: 14px;
-    }
+.header p {
+  margin-bottom: 0;
+  opacity: 0.9;
+}
 
-    .open-button {
-      display: block;
-      text-align: center;
-      text-decoration: none;
-      background: #075e54;
-      color: white;
-      padding: 12px;
-      border-radius: 8px;
-      margin-top: 12px;
-      font-weight: bold;
-    }
+.status {
+  color: #666;
+  margin: 15px 0;
+}
 
-    .empty {
-      background: white;
-      padding: 25px;
-      border-radius: 12px;
-      text-align: center;
-    }
+.conversation {
+  background: white;
+  padding: 18px;
+  margin: 14px 0;
+  border-radius: 16px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+}
 
-    .error {
-      background: #ffebee;
-      color: #b71c1c;
-      padding: 15px;
-      border-radius: 10px;
-    }
+.user {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
 
-  </style>
+.avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #075e54;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 25px;
+  flex-shrink: 0;
+}
+
+.user h3 {
+  margin: 0;
+  color: #075e54;
+}
+
+.service {
+  color: #666;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.time {
+  color: #888;
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+.open-button {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  background: #075e54;
+  color: white;
+  padding: 13px;
+  border-radius: 10px;
+  margin-top: 14px;
+  font-weight: bold;
+}
+
+.empty {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  text-align: center;
+}
+
+.error {
+  background: #ffebee;
+  color: #b71c1c;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+.back {
+  display: block;
+  text-align: center;
+  margin-top: 20px;
+  padding: 13px;
+  background: #e5f5ef;
+  color: #075e54;
+  text-decoration: none;
+  border-radius: 10px;
+  font-weight: bold;
+}
+
+</style>
 
 </head>
 
 
 <body>
 
+
 <div class="container">
+
+
+<div class="header">
 
   <h1>💬 AREWA HUB</h1>
 
-  <h2>Messages</h2>
-
-  <p id="status">
-    Loading conversations...
+  <p>
+    Your Conversations
   </p>
 
-  <div id="conversationList"></div>
+</div>
+
+
+<h2>
+  Messages
+</h2>
+
+
+<p
+  id="status"
+  class="status"
+>
+  Loading conversations...
+</p>
+
+
+<div id="conversationList"></div>
+
+
+<a
+  href="service-dashboard.html"
+  class="back"
+>
+  ← Back to Provider Dashboard
+</a>
+
 
 </div>
 
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+
 <script>
+
 
 const SUPABASE_URL =
 "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
 
 const SUPABASE_KEY =
 "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
@@ -119,13 +209,84 @@ document.getElementById(
   "status"
 );
 
+
 const list =
 document.getElementById(
   "conversationList"
 );
 
 
+/* ==========================
+   GET USER NAME
+========================== */
+
+async function getUserName(userId) {
+
+  /* FIRST: profiles */
+
+  const {
+    data: profile,
+    error: profileError
+  } =
+  await supabaseClient
+    .from("profiles")
+    .select("full_name")
+    .eq(
+      "user_id",
+      userId
+    )
+    .maybeSingle();
+
+
+  if (
+    !profileError &&
+    profile &&
+    profile.full_name
+  ) {
+
+    return profile.full_name;
+
+  }
+
+
+  /* SECOND: provider_profiles */
+
+  const {
+    data: provider,
+    error: providerError
+  } =
+  await supabaseClient
+    .from("provider_profiles")
+    .select("full_name, service")
+    .eq(
+      "user_id",
+      userId
+    )
+    .maybeSingle();
+
+
+  if (
+    !providerError &&
+    provider &&
+    provider.full_name
+  ) {
+
+    return provider.full_name;
+
+  }
+
+
+  return "AREWA HUB User";
+
+}
+
+
+/* ==========================
+   LOAD CONVERSATIONS
+========================== */
+
 async function loadConversations() {
+
 
   const {
     data: sessionData,
@@ -140,7 +301,7 @@ async function loadConversations() {
   ) {
 
     status.textContent =
-      "Please login first.";
+      "❌ Please login first.";
 
     return;
 
@@ -151,13 +312,17 @@ async function loadConversations() {
     sessionData.session.user;
 
 
+  /* GET CONVERSATIONS */
+
   const {
     data,
     error
   } =
   await supabaseClient
     .from("conversations")
-    .select("*")
+    .select(
+      "id, buyer_id, seller_id, created_at"
+    )
     .or(
       `buyer_id.eq.${currentUser.id},seller_id.eq.${currentUser.id}`
     )
@@ -176,9 +341,17 @@ async function loadConversations() {
     status.textContent = "";
 
     list.innerHTML = `
+
       <div class="error">
-        ❌ ${error.message}
+
+        ❌ Failed to load messages:
+
+        <br><br>
+
+        ${error.message}
+
       </div>
+
     `;
 
     return;
@@ -197,6 +370,7 @@ async function loadConversations() {
     status.textContent = "";
 
     list.innerHTML = `
+
       <div class="empty">
 
         <h3>
@@ -208,6 +382,7 @@ async function loadConversations() {
         </p>
 
       </div>
+
     `;
 
     return;
@@ -220,79 +395,127 @@ async function loadConversations() {
     " conversation(s)";
 
 
-  data.forEach(
-    conversation => {
+  /* ==========================
+     DISPLAY EACH CONVERSATION
+  ========================== */
 
-      const otherUser =
-        conversation.buyer_id ===
-        currentUser.id
-
-          ? conversation.seller_id
-
-          : conversation.buyer_id;
+  for (
+    const conversation of data
+  ) {
 
 
-      const div =
-        document.createElement(
-          "div"
-        );
+    let otherUserId;
 
 
-      div.className =
-        "conversation";
+    if (
+      conversation.buyer_id ===
+      currentUser.id
+    ) {
 
+      otherUserId =
+        conversation.seller_id;
 
-      div.innerHTML = `
+    } else {
 
-        <h3>
-          💬 AREWA HUB User
-        </h3>
-
-        <p>
-          Conversation ID:
-          ${conversation.id}
-        </p>
-
-        <p>
-          🕐 ${
-            new Date(
-              conversation.created_at
-            ).toLocaleString()
-          }
-        </p>
-
-        <a
-          class="open-button"
-          href="chat.html?conversation_id=${
-            conversation.id
-          }"
-        >
-          💬 Open Chat
-        </a>
-
-      `;
-
-
-      list.appendChild(
-        div
-      );
+      otherUserId =
+        conversation.buyer_id;
 
     }
-  );
+
+
+    /* GET OTHER USER NAME */
+
+    const otherUserName =
+      await getUserName(
+        otherUserId
+      );
+
+
+    /* CREATE CARD */
+
+    const div =
+      document.createElement(
+        "div"
+      );
+
+
+    div.className =
+      "conversation";
+
+
+    div.innerHTML = `
+
+      <div class="user">
+
+        <div class="avatar">
+          👤
+        </div>
+
+        <div>
+
+          <h3>
+            ${otherUserName}
+          </h3>
+
+          <div class="service">
+            💬 AREWA HUB Conversation
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="time">
+
+        🕐 ${
+          new Date(
+            conversation.created_at
+          ).toLocaleString()
+        }
+
+      </div>
+
+
+      <a
+        class="open-button"
+        href="chat.html?conversation_id=${
+          conversation.id
+        }"
+      >
+
+        💬 Open Chat
+
+      </a>
+
+    `;
+
+
+    list.appendChild(
+      div
+    );
+
+  }
 
 }
 
 
+/* START */
+
 loadConversations();
 
+
+/* AUTO REFRESH */
 
 setInterval(
   loadConversations,
   5000
 );
 
+
 </script>
+
 
 </body>
 
-</html>
+  </html>
