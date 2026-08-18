@@ -139,13 +139,26 @@ async function loadProviders() {
     );
 
 
-  const {
-    data,
-    error
-  } =
-  await supabaseClient
+  let query =
+  supabaseClient
     .from("provider_profiles")
     .select("*");
+
+if (service) {
+
+  query =
+    query.eq(
+      "service",
+      service
+    );
+
+}
+
+const {
+  data,
+  error
+} =
+await query;
 
 
   if (error) {
