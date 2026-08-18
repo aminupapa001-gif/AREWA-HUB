@@ -1,36 +1,501 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AREWA HUB - Service Dashboard</title>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
+
+<title>AREWA HUB - Service Provider Dashboard</title>
+
+<style>
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f7f9;
+  color: #222;
+}
+
+/* HEADER */
+
+.header {
+  background: linear-gradient(135deg, #075e54, #0b7a3b);
+  color: white;
+  padding: 25px 20px;
+  border-radius: 0 0 25px 25px;
+}
+
+.header-content {
+  max-width: 750px;
+  margin: auto;
+}
+
+.logo {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.subtitle {
+  margin-top: 8px;
+  opacity: 0.9;
+}
+
+/* CONTAINER */
+
+.container {
+  max-width: 750px;
+  margin: auto;
+  padding: 20px;
+}
+
+/* WELCOME */
+
+.welcome {
+  background: white;
+  padding: 20px;
+  border-radius: 18px;
+  margin-top: -10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.welcome h2 {
+  margin-top: 0;
+  color: #075e54;
+}
+
+/* CARDS */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 18px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+}
+
+.card-icon {
+  font-size: 32px;
+}
+
+.card h3 {
+  margin-bottom: 8px;
+}
+
+.number {
+  font-size: 25px;
+  font-weight: bold;
+  color: #075e54;
+}
+
+/* SECTION */
+
+.section {
+  margin-top: 25px;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+/* BUTTONS */
+
+.button {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 10px;
+  text-align: center;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.green {
+  background: #075e54;
+  color: white;
+}
+
+.light-green {
+  background: #e5f5ef;
+  color: #075e54;
+}
+
+.red {
+  background: #ffeaea;
+  color: #c62828;
+}
+
+/* PROFILE */
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #075e54;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+}
+
+.profile h3 {
+  margin: 0;
+}
+
+.profile p {
+  margin: 5px 0 0;
+  color: #666;
+}
+
+/* FOOTER */
+
+.footer {
+  text-align: center;
+  padding: 30px 10px;
+  color: #777;
+}
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .logo {
+    font-size: 24px;
+  }
+
+}
+
+</style>
+
 </head>
+
 
 <body>
 
-  <h1>🛠️ AREWA HUB</h1>
 
-  <h2>Service Provider Dashboard</h2>
+<!-- HEADER -->
 
-  <p>Welcome to your service provider account.</p>
+<div class="header">
 
-  <h3>My Services</h3>
+  <div class="header-content">
 
-  <p>🛠️ Total Services: 0</p>
-  <p><a href="services.html">➕ Add / View Services</a></p>
+    <div class="logo">
+      🛠️ AREWA HUB
+    </div>
 
-  <h3>Service Requests</h3>
+    <div class="subtitle">
+      Service Provider Center
+    </div>
 
-  <p>📋 New Requests: 0</p>
-  <p>📦 Completed Jobs: 0</p>
+  </div>
 
-  <h3>Earnings</h3>
+</div>
 
-  <p>💰 Total Earnings: ₦0</p>
 
-  <h3>Account</h3>
+<div class="container">
 
-  <p><a href="dashboard.html">← Back to Dashboard</a></p>
+
+<!-- WELCOME -->
+
+<div class="welcome">
+
+  <div class="profile">
+
+    <div class="avatar">
+      👤
+    </div>
+
+    <div>
+
+      <h3>
+        Welcome, Provider 👋
+      </h3>
+
+      <p>
+        Manage your services, requests and earnings.
+      </p>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- STATISTICS -->
+
+<div class="grid">
+
+
+  <div class="card">
+
+    <div class="card-icon">
+      🛠️
+    </div>
+
+    <h3>
+      My Services
+    </h3>
+
+    <div class="number">
+      0
+    </div>
+
+    <p>
+      Active Services
+    </p>
+
+  </div>
+
+
+  <div class="card">
+
+    <div class="card-icon">
+      📋
+    </div>
+
+    <h3>
+      Requests
+    </h3>
+
+    <div class="number">
+      0
+    </div>
+
+    <p>
+      New Requests
+    </p>
+
+  </div>
+
+
+  <div class="card">
+
+    <div class="card-icon">
+      📦
+    </div>
+
+    <h3>
+      Completed Jobs
+    </h3>
+
+    <div class="number">
+      0
+    </div>
+
+    <p>
+      Jobs Completed
+    </p>
+
+  </div>
+
+
+  <div class="card">
+
+    <div class="card-icon">
+      💰
+    </div>
+
+    <h3>
+      Earnings
+    </h3>
+
+    <div class="number">
+      ₦0
+    </div>
+
+    <p>
+      Total Earnings
+    </p>
+
+  </div>
+
+
+</div>
+
+
+<!-- MY SERVICES -->
+
+<div class="section">
+
+  <div class="section-title">
+    🛠️ My Services
+  </div>
+
+  <div class="card">
+
+    <p>
+      Add and manage the services you offer to customers.
+    </p>
+
+    <a
+      href="provider-register.html"
+      class="button green"
+    >
+      ➕ Add / Update My Service
+    </a>
+
+    <a
+      href="providers.html"
+      class="button light-green"
+    >
+      👀 View Service Providers
+    </a>
+
+  </div>
+
+</div>
+
+
+<!-- SERVICE REQUESTS -->
+
+<div class="section">
+
+  <div class="section-title">
+    📋 Service Requests
+  </div>
+
+  <div class="card">
+
+    <p>
+      You currently have no new service requests.
+    </p>
+
+    <a
+      href="chat-inbox.html"
+      class="button green"
+    >
+      💬 View Messages
+    </a>
+
+  </div>
+
+</div>
+
+
+<!-- ACCOUNT -->
+
+<div class="section">
+
+  <div class="section-title">
+    👤 Account
+  </div>
+
+  <div class="card">
+
+    <a
+      href="dashboard.html"
+      class="button light-green"
+    >
+      🏠 Back to Dashboard
+    </a>
+
+    <button
+      class="button red"
+      onclick="logout()"
+    >
+      🚪 Logout
+    </button>
+
+  </div>
+
+</div>
+
+
+</div>
+
+
+<!-- FOOTER -->
+
+<div class="footer">
+
+  AREWA HUB © 2026
+
+  <br>
+
+  Connecting Buyers, Sellers & Service Providers
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+const SUPABASE_URL =
+  "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+
+const supabaseClient =
+  supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+
+async function logout() {
+
+  const {
+    error
+  } =
+  await supabaseClient.auth.signOut();
+
+
+  if (error) {
+
+    alert(
+      "Logout failed: " +
+      error.message
+    );
+
+    return;
+
+  }
+
+
+  window.location.href =
+    "index.html";
+
+}
+
+
+</script>
+
 
 </body>
+
 </html>
