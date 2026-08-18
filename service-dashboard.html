@@ -67,9 +67,46 @@ body {
   box-shadow: 0 4px 15px rgba(0,0,0,0.08);
 }
 
-.welcome h2 {
-  margin-top: 0;
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #075e54;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.profile h2 {
+  margin: 0;
   color: #075e54;
+}
+
+.profile p {
+  margin: 6px 0 0;
+  color: #666;
+}
+
+/* PROVIDER INFO */
+
+.provider-info {
+  background: #e5f5ef;
+  margin-top: 15px;
+  padding: 15px;
+  border-radius: 14px;
+}
+
+.provider-info p {
+  margin: 8px 0;
 }
 
 /* CARDS */
@@ -145,33 +182,13 @@ body {
   color: #c62828;
 }
 
-/* PROFILE */
+/* LOADING */
 
-.profile {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.avatar {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: #075e54;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-}
-
-.profile h3 {
-  margin: 0;
-}
-
-.profile p {
-  margin: 5px 0 0;
-  color: #666;
+#loading {
+  text-align: center;
+  padding: 30px;
+  font-weight: bold;
+  color: #075e54;
 }
 
 /* FOOTER */
@@ -226,6 +243,18 @@ body {
 <div class="container">
 
 
+<!-- LOADING -->
+
+<div id="loading">
+  🔄 Loading your provider account...
+</div>
+
+
+<!-- DASHBOARD -->
+
+<div id="dashboard" style="display:none;">
+
+
 <!-- WELCOME -->
 
 <div class="welcome">
@@ -238,15 +267,48 @@ body {
 
     <div>
 
-      <h3>
-        Welcome, Provider 👋
-      </h3>
+      <h2 id="providerName">
+        Provider
+      </h2>
 
       <p>
-        Manage your services, requests and earnings.
+        Welcome to your service provider account 👋
       </p>
 
     </div>
+
+  </div>
+
+
+  <div class="provider-info">
+
+    <p>
+      🛠️ <strong>Service:</strong>
+      <span id="providerService">
+        -
+      </span>
+    </p>
+
+    <p>
+      📍 <strong>Location:</strong>
+      <span id="providerLocation">
+        -
+      </span>
+    </p>
+
+    <p>
+      📞 <strong>Phone:</strong>
+      <span id="providerPhone">
+        -
+      </span>
+    </p>
+
+    <p>
+      💬 <strong>WhatsApp:</strong>
+      <span id="providerWhatsapp">
+        -
+      </span>
+    </p>
 
   </div>
 
@@ -268,12 +330,15 @@ body {
       My Services
     </h3>
 
-    <div class="number">
-      0
+    <div
+      class="number"
+      id="serviceCount"
+    >
+      1
     </div>
 
     <p>
-      Active Services
+      Active Service
     </p>
 
   </div>
@@ -356,14 +421,14 @@ body {
   <div class="card">
 
     <p>
-      Add and manage the services you offer to customers.
+      Manage the service you offer to AREWA HUB customers.
     </p>
 
     <a
       href="provider-register.html"
       class="button green"
     >
-      ➕ Add / Update My Service
+      ✏️ Update My Service
     </a>
 
     <a
@@ -378,18 +443,18 @@ body {
 </div>
 
 
-<!-- SERVICE REQUESTS -->
+<!-- MESSAGES -->
 
 <div class="section">
 
   <div class="section-title">
-    📋 Service Requests
+    💬 Communication
   </div>
 
   <div class="card">
 
     <p>
-      You currently have no new service requests.
+      Chat with customers who want your service.
     </p>
 
     <a
@@ -414,13 +479,6 @@ body {
 
   <div class="card">
 
-    <a
-      href="dashboard.html"
-      class="button light-green"
-    >
-      🏠 Back to Dashboard
-    </a>
-
     <button
       class="button red"
       onclick="logout()"
@@ -429,6 +487,9 @@ body {
     </button>
 
   </div>
+
+</div>
+
 
 </div>
 
@@ -453,8 +514,10 @@ body {
 
 <script>
 
+
 const SUPABASE_URL =
   "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
 
 const SUPABASE_KEY =
   "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
@@ -466,6 +529,144 @@ const supabaseClient =
     SUPABASE_KEY
   );
 
+
+/* =========================
+   LOAD PROVIDER
+========================= */
+
+async function loadProvider() {
+
+  const loading =
+    document.getElementById("loading");
+
+  const dashboard =
+    document.getElementById("dashboard");
+
+
+  /* CHECK LOGIN */
+
+  const {
+    data: sessionData,
+    error: sessionError
+  } =
+  await supabaseClient.auth.getSession();
+
+
+  if (
+    sessionError ||
+    !sessionData.session
+  ) {
+
+    loading.innerHTML =
+      "❌ Please login as a service provider.";
+
+    setTimeout(function() {
+
+      window.location.href =
+        "provider-login.html";
+
+    }, 1500);
+
+    return;
+
+  }
+
+
+  const user =
+    sessionData.session.user;
+
+
+  /* GET PROVIDER PROFILE */
+
+  const {
+    data: provider,
+    error: providerError
+  } =
+  await supabaseClient
+    .from("provider_profiles")
+    .select("*")
+    .eq(
+      "user_id",
+      user.id
+    )
+    .maybeSingle();
+
+
+  if (providerError) {
+
+    console.error(providerError);
+
+    loading.innerHTML =
+      "❌ Failed to load provider profile: " +
+      providerError.message;
+
+    return;
+
+  }
+
+
+  if (!provider) {
+
+    loading.innerHTML =
+      "❌ This account is not registered as a service provider.";
+
+    return;
+
+  }
+
+
+  /* DISPLAY DATA */
+
+  document.getElementById(
+    "providerName"
+  ).textContent =
+    "Welcome, " +
+    (provider.full_name || "Provider") +
+    " 👋";
+
+
+  document.getElementById(
+    "providerService"
+  ).textContent =
+    provider.service ||
+    "Not specified";
+
+
+  document.getElementById(
+    "providerLocation"
+  ).textContent =
+    provider.location ||
+    "Not specified";
+
+
+  document.getElementById(
+    "providerPhone"
+  ).textContent =
+    provider.phone ||
+    "Not available";
+
+
+  document.getElementById(
+    "providerWhatsapp"
+  ).textContent =
+    provider.whatsapp ||
+    "Not available";
+
+
+  /* SHOW DASHBOARD */
+
+  loading.style.display =
+    "none";
+
+  dashboard.style.display =
+    "block";
+
+}
+
+
+/* =========================
+   LOGOUT
+========================= */
 
 async function logout() {
 
@@ -491,6 +692,11 @@ async function logout() {
     "index.html";
 
 }
+
+
+/* START */
+
+loadProvider();
 
 
 </script>
