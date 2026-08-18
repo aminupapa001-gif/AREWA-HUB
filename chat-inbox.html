@@ -141,31 +141,29 @@ body {
 
 <body>
 
-
 <div class="container">
-
 
 <div class="header">
 
-  <h1>💬 AREWA HUB</h1>
+<h1>💬 AREWA HUB</h1>
 
-  <p>
-    Your Conversations
-  </p>
+<p>
+Your Conversations
+</p>
 
 </div>
 
 
 <h2>
-  Messages
+Messages
 </h2>
 
 
 <p
-  id="status"
-  class="status"
+id="status"
+class="status"
 >
-  Loading conversations...
+Loading conversations...
 </p>
 
 
@@ -173,12 +171,11 @@ body {
 
 
 <a
-  href="service-dashboard.html"
-  class="back"
+href="service-dashboard.html"
+class="back"
 >
-  ← Back to Provider Dashboard
+← Back to Provider Dashboard
 </a>
-
 
 </div>
 
@@ -188,10 +185,8 @@ body {
 
 <script>
 
-
 const SUPABASE_URL =
 "https://ffjofoeiwaiyxecbeuwt.supabase.co";
-
 
 const SUPABASE_KEY =
 "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
@@ -199,94 +194,136 @@ const SUPABASE_KEY =
 
 const supabaseClient =
 supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
+SUPABASE_URL,
+SUPABASE_KEY
 );
 
 
 const status =
-document.getElementById(
-  "status"
-);
-
+document.getElementById("status");
 
 const list =
-document.getElementById(
-  "conversationList"
-);
+document.getElementById("conversationList");
 
 
-/* ==========================
-   GET USER NAME
-========================== */
+/* =========================
+   FIND USER NAME
+========================= */
 
-async function getUserName(userId) {
+async function getUserInfo(userId) {
 
-  /* FIRST: profiles */
+  if (!userId) {
 
-  const {
-    data: profile,
-    error: profileError
-  } =
-  await supabaseClient
-    .from("profiles")
-    .select("full_name")
-    .eq(
-      "user_id",
-      userId
-    )
-    .maybeSingle();
-
-
-  if (
-    !profileError &&
-    profile &&
-    profile.full_name
-  ) {
-
-    return profile.full_name;
+    return {
+      name: "Unknown User",
+      service: ""
+    };
 
   }
 
 
-  /* SECOND: provider_profiles */
+  /* =========================
+     1. PROVIDER PROFILE
+  ========================= */
 
   const {
-    data: provider,
-    error: providerError
+    data: provider
   } =
   await supabaseClient
     .from("provider_profiles")
     .select("full_name, service")
-    .eq(
-      "user_id",
-      userId
-    )
+    .eq("user_id", userId)
     .maybeSingle();
 
 
-  if (
-    !providerError &&
-    provider &&
-    provider.full_name
-  ) {
+  if (provider) {
 
-    return provider.full_name;
+    return {
+      name:
+        provider.full_name ||
+        "Service Provider",
+
+      service:
+        provider.service ||
+        "Service Provider"
+    };
 
   }
 
 
-  return "AREWA HUB User";
+  /* =========================
+     2. PROFILES USING user_id
+  ========================= */
+
+  const {
+    data: profileByUserId
+  } =
+  await supabaseClient
+    .from("profiles")
+    .select("full_name, role, service")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+
+  if (profileByUserId) {
+
+    return {
+      name:
+        profileByUserId.full_name ||
+        "AREWA HUB User",
+
+      service:
+        profileByUserId.service ||
+        profileByUserId.role ||
+        "AREWA HUB User"
+    };
+
+  }
+
+
+  /* =========================
+     3. PROFILES USING id
+  ========================= */
+
+  const {
+    data: profileById
+  } =
+  await supabaseClient
+    .from("profiles")
+    .select("full_name, role, service")
+    .eq("id", userId)
+    .maybeSingle();
+
+
+  if (profileById) {
+
+    return {
+      name:
+        profileById.full_name ||
+        "AREWA HUB User",
+
+      service:
+        profileById.service ||
+        profileById.role ||
+        "AREWA HUB User"
+    };
+
+  }
+
+
+  return {
+    name: "AREWA HUB User",
+    service: ""
+  };
 
 }
 
 
-/* ==========================
+/* =========================
    LOAD CONVERSATIONS
-========================== */
+========================= */
 
 async function loadConversations() {
-
 
   const {
     data: sessionData,
@@ -312,7 +349,9 @@ async function loadConversations() {
     sessionData.session.user;
 
 
-  /* GET CONVERSATIONS */
+  /* =========================
+     GET CONVERSATIONS
+  ========================= */
 
   const {
     data,
@@ -395,14 +434,13 @@ async function loadConversations() {
     " conversation(s)";
 
 
-  /* ==========================
-     DISPLAY EACH CONVERSATION
-  ========================== */
+  /* =========================
+     DISPLAY CONVERSATIONS
+  ========================= */
 
   for (
     const conversation of data
   ) {
-
 
     let otherUserId;
 
@@ -423,15 +461,11 @@ async function loadConversations() {
     }
 
 
-    /* GET OTHER USER NAME */
-
-    const otherUserName =
-      await getUserName(
+    const userInfo =
+      await getUserInfo(
         otherUserId
       );
 
-
-    /* CREATE CARD */
 
     const div =
       document.createElement(
@@ -454,11 +488,16 @@ async function loadConversations() {
         <div>
 
           <h3>
-            ${otherUserName}
+            ${userInfo.name}
           </h3>
 
           <div class="service">
-            💬 AREWA HUB Conversation
+
+            💬 ${
+              userInfo.service ||
+              "AREWA HUB Conversation"
+            }
+
           </div>
 
         </div>
@@ -491,16 +530,16 @@ async function loadConversations() {
     `;
 
 
-    list.appendChild(
-      div
-    );
+    list.appendChild(div);
 
   }
 
 }
 
 
-/* START */
+/* =========================
+   START
+========================= */
 
 loadConversations();
 
@@ -512,10 +551,8 @@ setInterval(
   5000
 );
 
-
 </script>
-
 
 </body>
 
-  </html>
+</html>
