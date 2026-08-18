@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>AREWA HUB - Provider Login</title>
+
+  <style>
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 50px auto;
+      background: white;
+      padding: 25px;
+      border-radius: 14px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      color: #075e54;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px;
+      margin: 8px 0 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      background: #075e54;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    a {
+      display: block;
+      text-align: center;
+      margin-top: 15px;
+      color: #075e54;
+    }
+
+    #message {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>🛠️ AREWA HUB</h1>
+
+  <h2>Provider Login</h2>
+
+  <p>Login to manage your service and messages.</p>
+
+  <form id="loginForm">
+
+    <label>Email</label>
+
+    <input
+      type="email"
+      id="email"
+      required
+    >
+
+    <label>Password</label>
+
+    <input
+      type="password"
+      id="password"
+      required
+    >
+
+    <button type="submit">
+      🔐 Login
+    </button>
+
+  </form>
+
+  <p id="message"></p>
+
+  <a href="provider-register.html">
+    ➕ Register as Provider
+  </a>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+const SUPABASE_URL =
+  "https://ffjofoeiwaiyxecbeuwt.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_JSRFL_7wg3kXrl7CvdmsUA_k_RfWxrF";
+
+const supabaseClient =
+  supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+
+document
+  .getElementById("loginForm")
+  .addEventListener(
+    "submit",
+    async function(event) {
+
+      event.preventDefault();
+
+      const message =
+        document.getElementById("message");
+
+      const email =
+        document
+          .getElementById("email")
+          .value
+          .trim();
+
+      const password =
+        document
+          .getElementById("password")
+          .value;
+
+
+      message.textContent =
+        "Logging in...";
+
+
+      const {
+        data,
+        error
+      } =
+      await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
+
+
+      if (error) {
+
+        console.log(error);
+
+        message.textContent =
+          "❌ Login failed: " +
+          error.message;
+
+        return;
+      }
+
+
+      if (!data.user) {
+
+        message.textContent =
+          "❌ User account not found.";
+
+        return;
+      }
+
+
+      message.textContent =
+        "✅ Login successful!";
+
+
+      setTimeout(function() {
+
+        window.location.href =
+          "service-dashboard.html";
+
+      }, 700);
+
+    }
+  );
+
+</script>
+
+</body>
+
+</html>
