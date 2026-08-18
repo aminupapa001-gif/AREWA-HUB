@@ -187,16 +187,53 @@ document
       }
 
 
-      message.textContent =
-        "✅ Login successful!";
+      const {
+  data: provider,
+  error: providerError
+} =
+await supabaseClient
+  .from("provider_profiles")
+  .select("id, service")
+  .eq(
+    "user_id",
+    data.user.id
+  )
+  .maybeSingle();
 
 
-      setTimeout(function() {
+if (providerError) {
 
-        window.location.href =
-          "service-dashboard.html";
+  console.log(providerError);
 
-      }, 700);
+  message.textContent =
+    "❌ Could not check provider profile: " +
+    providerError.message;
+
+  return;
+}
+
+
+if (!provider) {
+
+  await supabaseClient.auth.signOut();
+
+  message.textContent =
+    "❌ This account is not registered as a service provider.";
+
+  return;
+}
+
+
+message.textContent =
+  "✅ Provider login successful!";
+
+
+setTimeout(function() {
+
+  window.location.href =
+    "service-dashboard.html";
+
+}, 700);
 
     }
   );
