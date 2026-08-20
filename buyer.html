@@ -127,13 +127,26 @@
 
     <!-- MESSAGES -->
 
-    <button
+<button
   class="message-button"
   onclick="window.location.href='chat-inbox.html'">
 
   💬 Messages
+  <span id="unreadBadge"
+    style="
+      display:none;
+      background:#e53935;
+      color:white;
+      padding:3px 8px;
+      border-radius:20px;
+      margin-left:8px;
+      font-size:13px;
+    ">
+  </span>
 
-    </button>
+</button>
+
+    
 
 
     <!-- LOGOUT -->
@@ -276,7 +289,102 @@
 
   }
 
+async function loadUnreadMessages() {
 
+  const {
+    data: sessionData
+  } = await supabaseClient.auth.getSession();
+
+  if (!sessionData.session) {
+    return;
+  }
+
+  const userId =
+    sessionData.session.user.id;
+
+  const {
+    data: conversations,
+    error: conversationError
+  } =
+    await supabaseClient
+      .from("conversations")
+      .select("id")
+      .or(
+        `buyer_id.eq.${userId},seller_id.eq.${userId}`
+      );
+
+  if (conversationError) {
+    console.log(conversationError);
+    return;
+  }
+
+  const conversationIds =
+    (conversations || []).map(
+      c => c.id
+    );
+
+  if (conversationIds.length === 0) {
+    return;
+  }
+
+  const {
+    count,
+    error
+  } =
+    await supabaseClient
+      .from("messages")
+      .select("*", {
+        count: "exact",
+        head: true
+      })
+      .in(
+        "conversation_id",
+        conversationIds
+      )
+      .eq(
+        "is_read",
+        false
+      )
+      .neq(
+        "sender_id",
+        userId
+      );
+
+  if (error) {
+    console.log(error);
+    return;
+  }
+
+  const badge =
+    document.getElementById(
+      "unreadBadge"
+    );
+
+  if (count > 0) {
+
+    badge.style.display =
+      "inline-block";
+
+    badge.textContent =
+      count;
+
+  } else {
+
+    badge.style.display =
+      "none";
+
+  }
+
+}
+
+loadBuyer();
+
+loadUnreadMessages();
+
+setInterval(
+  loadUnreadMessages,
+  5000
+);
   loadBuyer();
 
 </script>
