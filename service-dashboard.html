@@ -182,6 +182,31 @@ body {
   color: #c62828;
 }
 
+/* MESSAGE BADGE */
+
+.message-button {
+  position: relative;
+}
+
+.unread-badge {
+  display: inline-block;
+  background: #e53935;
+  color: white;
+  min-width: 24px;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: bold;
+  margin-left: 7px;
+  vertical-align: middle;
+}
+
+.hidden {
+  display: none;
+}
+
 /* LOADING */
 
 #loading {
@@ -284,30 +309,22 @@ body {
 
     <p>
       🛠️ <strong>Service:</strong>
-      <span id="providerService">
-        -
-      </span>
+      <span id="providerService">-</span>
     </p>
 
     <p>
       📍 <strong>Location:</strong>
-      <span id="providerLocation">
-        -
-      </span>
+      <span id="providerLocation">-</span>
     </p>
 
     <p>
       📞 <strong>Phone:</strong>
-      <span id="providerPhone">
-        -
-      </span>
+      <span id="providerPhone">-</span>
     </p>
 
     <p>
       💬 <strong>WhatsApp:</strong>
-      <span id="providerWhatsapp">
-        -
-      </span>
+      <span id="providerWhatsapp">-</span>
     </p>
 
   </div>
@@ -459,9 +476,18 @@ body {
 
     <a
       href="chat-inbox.html"
-      class="button green"
+      class="button green message-button"
     >
-      💬 View Messages
+
+      💬 Messages
+
+      <span
+        id="unreadBadge"
+        class="unread-badge hidden"
+      >
+        0
+      </span>
+
     </a>
 
   </div>
@@ -492,7 +518,6 @@ body {
 
 
 </div>
-
 
 </div>
 
@@ -543,8 +568,6 @@ async function loadProvider() {
     document.getElementById("dashboard");
 
 
-  /* CHECK LOGIN */
-
   const {
     data: sessionData,
     error: sessionError
@@ -575,8 +598,6 @@ async function loadProvider() {
   const user =
     sessionData.session.user;
 
-
-  /* GET PROVIDER PROFILE */
 
   const {
     data: provider,
@@ -615,8 +636,6 @@ async function loadProvider() {
   }
 
 
-  /* DISPLAY DATA */
-
   document.getElementById(
     "providerName"
   ).textContent =
@@ -653,13 +672,184 @@ async function loadProvider() {
     "Not available";
 
 
-  /* SHOW DASHBOARD */
-
   loading.style.display =
     "none";
 
   dashboard.style.display =
     "block";
+
+
+  /* LOAD UNREAD MESSAGES */
+
+  loadUnreadMessages();
+
+
+  /* CHECK EVERY 5 SECONDS */
+
+  setInterval(
+    loadUnreadMessages,
+    5000
+  );
+
+}
+
+
+/* =========================
+   UNREAD MESSAGES
+========================= */
+
+async function loadUnreadMessages() {
+
+  const badge =
+    document.getElementById(
+      "unreadBadge"
+    );
+
+
+  if (!badge) {
+    return;
+  }
+
+
+  const {
+    data: sessionData
+  } =
+  await supabaseClient.auth.getSession();
+
+
+  if (
+    !sessionData ||
+    !sessionData.session
+  ) {
+
+    return;
+
+  }
+
+
+  const currentUser =
+    sessionData.session.user;
+
+
+  /*
+    Get conversations where
+    provider is participant.
+  */
+
+  const {
+    data: conversations,
+    error: conversationError
+  } =
+  await supabaseClient
+    .from("conversations")
+    .select(
+      "id, buyer_id, seller_id"
+    )
+    .or(
+      `buyer_id.eq.${currentUser.id},seller_id.eq.${currentUser.id}`
+    );
+
+
+  if (conversationError) {
+
+    console.error(
+      "Conversation error:",
+      conversationError
+    );
+
+    return;
+
+  }
+
+
+  if (
+    !conversations ||
+    conversations.length === 0
+  ) {
+
+    badge.classList.add(
+      "hidden"
+    );
+
+    return;
+
+  }
+
+
+  const conversationIds =
+    conversations.map(
+      conversation =>
+        conversation.id
+    );
+
+
+  /*
+    Count unread messages
+    sent by other users.
+  */
+
+  const {
+    count,
+    error: messageError
+  } =
+  await supabaseClient
+    .from("messages")
+    .select(
+      "id",
+      {
+        count: "exact",
+        head: true
+      }
+    )
+    .in(
+      "conversation_id",
+      conversationIds
+    )
+    .neq(
+      "sender_id",
+      currentUser.id
+    )
+    .eq(
+      "is_read",
+      false
+    );
+
+
+  if (messageError) {
+
+    console.error(
+      "Unread message error:",
+      messageError
+    );
+
+    return;
+
+  }
+
+
+  const unread =
+    count || 0;
+
+
+  if (unread > 0) {
+
+    badge.textContent =
+      unread > 99
+        ? "99+"
+        : unread;
+
+
+    badge.classList.remove(
+      "hidden"
+    );
+
+  } else {
+
+    badge.classList.add(
+      "hidden"
+    );
+
+  }
 
 }
 
