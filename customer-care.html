@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
+
+<title>AREWA HUB - AI Customer Care</title>
+
+<style>
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f7f9;
+}
+
+.chat-container {
+  max-width: 750px;
+  height: 100vh;
+  margin: auto;
+  background: white;
+  display: flex;
+  flex-direction: column;
+}
+
+/* HEADER */
+
+.header {
+  background: linear-gradient(
+    135deg,
+    #075e54,
+    #0b7a3b
+  );
+
+  color: white;
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ai-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: white;
+  color: #075e54;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 25px;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.header p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+/* MESSAGES */
+
+#messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.message {
+  max-width: 82%;
+  padding: 12px 15px;
+  border-radius: 16px;
+  line-height: 1.5;
+}
+
+.ai-message {
+  align-self: flex-start;
+  background: #eef7f3;
+  color: #222;
+  border-bottom-left-radius: 5px;
+}
+
+.user-message {
+  align-self: flex-end;
+  background: #075e54;
+  color: white;
+  border-bottom-right-radius: 5px;
+}
+
+.time {
+  display: block;
+  font-size: 10px;
+  margin-top: 5px;
+  opacity: 0.65;
+}
+
+/* QUICK QUESTIONS */
+
+.quick-area {
+  padding: 10px 15px;
+  border-top: 1px solid #eee;
+}
+
+.quick-title {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.quick-buttons {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.quick-buttons button {
+  white-space: nowrap;
+  border: none;
+  background: #e5f5ef;
+  color: #075e54;
+  padding: 9px 12px;
+  border-radius: 20px;
+  font-weight: bold;
+}
+
+/* INPUT */
+
+.input-area {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid #ddd;
+}
+
+#messageInput {
+  flex: 1;
+  border: 1px solid #ccc;
+  border-radius: 24px;
+  padding: 13px 16px;
+  font-size: 15px;
+  outline: none;
+}
+
+#sendButton {
+  border: none;
+  border-radius: 24px;
+  background: #075e54;
+  color: white;
+  padding: 0 18px;
+  font-weight: bold;
+}
+
+#sendButton:disabled {
+  opacity: 0.5;
+}
+
+/* HUMAN SUPPORT */
+
+.support-button {
+  margin: 10px 15px;
+  padding: 13px;
+  border: none;
+  border-radius: 12px;
+
+  background: #6a1b9a;
+  color: white;
+
+  font-size: 15px;
+  font-weight: bold;
+}
+
+/* FOOTER */
+
+.footer {
+  text-align: center;
+  padding: 8px;
+  font-size: 11px;
+  color: #888;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="chat-container">
+
+
+<!-- HEADER -->
+
+<div class="header">
+
+  <div class="ai-avatar">
+    🤖
+  </div>
+
+  <div>
+
+    <h2>
+      AREWA HUB AI Customer Care
+    </h2>
+
+    <p>
+      Online • Ready to help you
+    </p>
+
+  </div>
+
+</div>
+
+
+<!-- MESSAGES -->
+
+<div id="messages">
+
+  <div class="message ai-message">
+
+    👋 Sannu! Barka da zuwa
+    <strong>AREWA HUB</strong>.
+
+    <br><br>
+
+    Ni ne AI Customer Care na AREWA HUB.
+    Zan iya taimaka maka da:
+
+    <br><br>
+
+    🛍️ Products<br>
+    🛠️ Services<br>
+    📦 Orders & Delivery<br>
+    💳 Payments & Wallet<br>
+    👤 Account
+
+    <br><br>
+
+    Me kake son sani?
+
+    <span class="time">
+      Now
+    </span>
+
+  </div>
+
+</div>
+
+
+<!-- QUICK QUESTIONS -->
+
+<div class="quick-area">
+
+  <div class="quick-title">
+    Quick Questions
+  </div>
+
+  <div class="quick-buttons">
+
+    <button onclick="quickQuestion('Ina son siyan kaya')">
+      🛍️ Buy Products
+    </button>
+
+    <button onclick="quickQuestion('Ina neman service')">
+      🛠️ Find Service
+    </button>
+
+    <button onclick="quickQuestion('Ina son duba order dina')">
+      📦 My Order
+    </button>
+
+    <button onclick="quickQuestion('Ina da matsalar payment')">
+      💳 Payment
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- HUMAN SUPPORT -->
+
+<button
+  class="support-button"
+  onclick="contactHuman()"
+>
+  👨🏽‍💼 Talk to Human Customer Care
+</button>
+
+
+<!-- INPUT -->
+
+<div class="input-area">
+
+  <input
+    id="messageInput"
+    type="text"
+    placeholder="Rubuta tambayarka..."
+    autocomplete="off"
+  >
+
+  <button
+    id="sendButton"
+    onclick="sendMessage()"
+  >
+    Send
+  </button>
+
+</div>
+
+
+<div class="footer">
+
+  AREWA HUB © 2026
+
+</div>
+
+
+</div>
+
+
+<script>
+
+
+const messages =
+document.getElementById(
+  "messages"
+);
+
+const input =
+document.getElementById(
+  "messageInput"
+);
+
+const sendButton =
+document.getElementById(
+  "sendButton"
+);
+
+
+/* =========================
+   TIME
+========================= */
+
+function getTime() {
+
+  return new Date()
+    .toLocaleTimeString(
+      [],
+      {
+        hour: "2-digit",
+        minute: "2-digit"
+      }
+    );
+
+}
+
+
+/* =========================
+   ADD MESSAGE
+========================= */
+
+function addMessage(
+  text,
+  type
+) {
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+  div.className =
+    "message " +
+    (
+      type === "user"
+        ? "user-message"
+        : "ai-message"
+    );
+
+  const messageText =
+    document.createElement(
+      "div"
+    );
+
+  messageText.textContent =
+    text;
+
+  const time =
+    document.createElement(
+      "span"
+    );
+
+  time.className =
+    "time";
+
+  time.textContent =
+    getTime();
+
+  div.appendChild(
+    messageText
+  );
+
+  div.appendChild(
+    time
+  );
+
+  messages.appendChild(
+    div
+  );
+
+  messages.scrollTop =
+    messages.scrollHeight;
+
+}
+
+
+/* =========================
+   AI DEMO RESPONSE
+========================= */
+
+function getDemoResponse(
+  question
+) {
+
+  const q =
+    question.toLowerCase();
+
+
+  if (
+    q.includes("kaya") ||
+    q.includes("product") ||
+    q.includes("saya")
+  ) {
+
+    return `
+🛍️ Za ka iya neman kaya a AREWA HUB ta hanyar Browse Products.
+
+Ka zaɓi kayan da kake so, ka saka su a Cart, sannan ka ci gaba da Order.
+    `;
+
+  }
+
+
+  if (
+    q.includes("service") ||
+    q.includes("aiki")
+  ) {
+
+    return `
+🛠️ Idan kana neman service, shiga Find a Service sannan ka zaɓi irin aikin da kake nema.
+    `;
+
+  }
+
+
+  if (
+    q.includes("order") ||
+    q.includes("oda")
+  ) {
+
+    return `
+📦 Don duba order ɗinka, shiga My Orders a Buyer Dashboard.
+    `;
+
+  }
+
+
+  if (
+    q.includes("payment") ||
+    q.includes("biya") ||
+    q.includes("kudi")
+  ) {
+
+    return `
+💳 Idan kana da matsalar payment, tabbatar payment ɗin ya kammala. Idan har yanzu akwai matsala, za ka iya tuntuɓar Human Customer Care.
+    `;
+
+  }
+
+
+  if (
+    q.includes("seller") ||
+    q.includes("sayarda")
+  ) {
+
+    return `
+🏪 Idan kana son sayar da kaya, shiga Seller Center sannan ka danna Add Product.
+    `;
+
+  }
+
+
+  if (
+    q.includes("provider") ||
+    q.includes("graphic") ||
+    q.includes("design")
+  ) {
+
+    return `
+🛠️ AREWA HUB yana haɗa customers da service providers kamar Graphic Designers, Web Developers da sauran masu sana'a.
+    `;
+
+  }
+
+
+  return `
+🤖 Na fahimci tambayarka.
+
+A yanzu zan iya taimaka maka da Products, Services, Orders, Payments da Account.
+
+Idan kana buƙatar taimakon mutum kai tsaye, danna "Talk to Human Customer Care".
+  `;
+
+}
+
+
+/* =========================
+   SEND MESSAGE
+========================= */
+
+function sendMessage() {
+
+  const text =
+    input.value.trim();
+
+
+  if (!text) {
+    return;
+  }
+
+
+  addMessage(
+    text,
+    "user"
+  );
+
+
+  input.value =
+    "";
+
+  sendButton.disabled =
+    true;
+
+
+  /*
+    Temporary AI response.
+    Later we will replace this
+    with real AI through Supabase.
+  */
+
+  setTimeout(
+    function() {
+
+      const response =
+        getDemoResponse(
+          text
+        );
+
+      addMessage(
+        response,
+        "ai"
+      );
+
+      sendButton.disabled =
+        false;
+
+      input.focus();
+
+    },
+    700
+  );
+
+}
+
+
+/* =========================
+   QUICK QUESTION
+========================= */
+
+function quickQuestion(
+  question
+) {
+
+  input.value =
+    question;
+
+  sendMessage();
+
+}
+
+
+/* =========================
+   HUMAN SUPPORT
+========================= */
+
+function contactHuman() {
+
+  window.location.href =
+    "chat-inbox.html";
+
+}
+
+
+/* =========================
+   ENTER KEY
+========================= */
+
+input.addEventListener(
+  "keydown",
+  function(event) {
+
+    if (
+      event.key === "Enter"
+    ) {
+
+      event.preventDefault();
+
+      sendMessage();
+
+    }
+
+  }
+);
+
+</script>
+
+
+</body>
+
+  </html>
